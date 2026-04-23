@@ -133,6 +133,7 @@ def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any])
         report_date=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         collected_at=evidence.get("collected_at"),
         summary=compliance_status.get("summary", {}),
+        readiness=_build_readiness(compliance_status, remediation),
         control_families=grouped,
         devices=(intune_data.get("devices") or []),
         intune_available=bool(intune_data.get("devices")),
@@ -178,6 +179,73 @@ def _group_by_family(controls: dict[str, dict[str, Any]]) -> list[dict[str, Any]
                 {"key": family, "title": family, "controls": controls_list}
             )
     return result
+
+
+def _build_readiness(
+    compliance_status: dict[str, Any],
+    remediation: dict[str, Any],
+) -> dict[str, Any]:
+    controls = compliance_status.get("controls", {}) or {}
+    families: dict[str, dict[str, Any]] = {}
+    for cid, control in controls.items():
+        family = control.get("family", cid.split("-")[0])
+        bucket = families.setdefault(
+            family,
+            {"key": family, "title": nist_800_171.FAMILY_TITLES.get(family, family),
+             "total": 0, "compliant": 0, "partial": 0, "notAddressed": 0},
+        )
+        bucket["total"] += 1
+        status = control.get("status")
+        if status == "COMPLIANT":
+            bucket["compliant"] += 1
+        elif status == "PARTIAL":
+            bucket["partial"] += 1
+        else:
+            bucket["notAddressed"] += 1
+    family_rows: list[dict[str, Any]] = []
+    for row in families.values():
+        total = row["total"] or 1
+        row["pct"] = round(((row["compliant"] * 1.0 + row["partial"] * 0.5) / total) * 100)
+        family_rows.append(row)
+    family_rows.sort(key=lambda r: (r["pct"], r["key"]))
+
+    bucket_order = {"quick_win": 0, "medium": 1, "heavy_lift": 2}
+    gaps: list[dict[str, Any]] = []
+    for cid, control in controls.items():
+        if control.get("status") == "COMPLIANT":
+            continue
+        remediation_info = control.get("remediation") or {}
+        gaps.append({
+            "id": cid,
+            "title": control.get("title"),
+            "status": control.get("status"),
+            "firstGap": (control.get("gaps") or [""])[0],
+            "effort": remediation_info.get("effort", "Unknown"),
+            "bucket": remediation_info.get("bucket", "medium"),
+        })
+    gaps.sort(key=lambda g: (
+        0 if g["status"] == "NOT_ADDRESSED" else 1,
+        bucket_order.get(g["bucket"], 1),
+    ))
+
+    quick_win_count = sum(
+        1 for tasks in (remediation.get("quick_win") or [])
+        if tasks.get("status") != "COMPLIANT"
+    )
+
+    summary = compliance_status.get("summary", {}) or {}
+    total_controls = len(controls)
+    return {
+        "total": total_controls,
+        "compliant": summary.get("compliant", 0),
+        "partial": summary.get("partial", 0),
+        "notAddressed": summary.get("notAddressed", 0),
+        "automatedMaturity": summary.get("automatedMaturity", 0),
+        "percentage": summary.get("overallPercentage", 0),
+        "quickWins": quick_win_count,
+        "familyRows": family_rows,
+        "topGaps": gaps[:5],
+    }
 
 
 def _user_summary(azure: dict[str, Any]) -> dict[str, Any]:

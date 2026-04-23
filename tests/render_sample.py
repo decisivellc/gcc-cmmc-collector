@@ -44,15 +44,17 @@ def render() -> Path:
         lstrip_blocks=True,
     )
     template = env.get_template("report.html")
+    remediation = nist_800_171.generate_remediation_backlog(compliance)
     html = template.render(
         report_date=FIXED_HEADER,
         collected_at=evidence["collected_at"],
         summary=compliance.get("summary", {}),
+        readiness=main._build_readiness(compliance, remediation),
         control_families=main._group_by_family(compliance.get("controls", {})),
         devices=(evidence["intune"].get("devices") or []),
         intune_available=bool(evidence["intune"].get("devices")),
         user_summary=main._user_summary(evidence["azure_ad"]),
-        remediation=nist_800_171.generate_remediation_backlog(compliance),
+        remediation=remediation,
         collection_warnings=evidence.get("collection_warnings") or [],
         policies=evidence.get("policies") or {},
     )

@@ -908,11 +908,7 @@ def _map_policy_only_controls(evidence: dict[str, Any]) -> dict[str, dict[str, A
             )
             entry["status"] = STATUS_COMPLIANT
             entry["maturity"] = MATURITY_AUTOMATED
-            entry["remediation"] = _remediation(
-                "0 hours",
-                BUCKET_QUICK,
-                ["Review document annually and re-publish updated version."],
-            )
+            entry["remediation"] = _remediation("0 hours", BUCKET_QUICK, [])
         else:
             reason = (
                 "No matching policy document found in configured SharePoint library."

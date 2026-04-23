@@ -68,6 +68,119 @@
     background: linear-gradient(90deg, #1976d2, #2e7d32);
   }
   .progress .pct { font-size: 28px; font-weight: 600; }
+  .readiness-headline {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .readiness-score { min-width: 140px; }
+  .readiness-score .big-pct {
+    display: block;
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .readiness-score .score-label {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .readiness-narrative { flex: 1; min-width: 280px; font-size: 15px; }
+  .readiness-narrative strong { color: var(--ink); }
+  .readiness-bar {
+    width: 100%;
+    height: 10px;
+    background: #e8edf3;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .readiness-bar > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #c62828 0%, #f5a623 50%, #2e7d32 100%);
+  }
+  .readiness-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 900px) {
+    .readiness-grid { grid-template-columns: 1fr; }
+  }
+  .readiness-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .readiness-panel h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  table.heatmap { border: none; background: transparent; }
+  table.heatmap td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  table.heatmap tr:last-child td { border-bottom: none; }
+  table.heatmap .fam-title { font-weight: 600; white-space: nowrap; }
+  table.heatmap .fam-bar { width: 100%; }
+  table.heatmap .fam-stat {
+    text-align: right;
+    color: var(--muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  table.heatmap .fam-pct {
+    text-align: right;
+    font-weight: 600;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    min-width: 44px;
+  }
+  .mini-bar {
+    width: 100%;
+    height: 8px;
+    background: #e8edf3;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mini-bar > span { display: block; height: 100%; }
+  ol.top-gaps { list-style: none; padding: 0; margin: 0; }
+  ol.top-gaps li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  ol.top-gaps li:last-child { border-bottom: none; }
+  .gap-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .gap-header code { font-size: 13px; }
+  .gap-header .effort {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .gap-title { font-weight: 600; font-size: 14px; }
+  .gap-detail { color: var(--muted); font-size: 13px; margin-top: 2px; }
   table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); }
   th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
   th { background: #edf2f7; font-weight: 600; }
@@ -136,15 +249,216 @@
 
 <section id="summary">
   <h2>Overall Readiness</h2>
-  <div class="progress">
-    <span class="pct">66% Ready</span>
-    <div class="bar"><span style="width: 66%"></span></div>
+
+  <div class="readiness-headline">
+    <div class="readiness-score">
+      <span class="big-pct">15 / 28</span>
+      <span class="score-label">controls assessment-ready</span>
+    </div>
+    <div class="readiness-narrative">
+      <strong>66%</strong> weighted readiness
+      (15 compliant, 7 partial, 6 not addressed).
+        <strong>2 quick wins</strong>
+        available — each estimated at a few hours or less. Closing all of them would move you to
+        <strong>61%</strong>.
+      <div class="readiness-bar"><span style="width: 66%"></span></div>
+    </div>
   </div>
+
+  <div class="readiness-grid">
+    <div class="readiness-panel">
+      <h3>Readiness by control family</h3>
+      <table class="heatmap">
+        <tr>
+          <td class="fam-title" title="Maintenance">MA — Maintenance</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 0%; background: var(--red);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">0/1</td>
+          <td class="fam-pct">0%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Physical Protection">PE — Physical Protection</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 0%; background: var(--red);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">0/1</td>
+          <td class="fam-pct">0%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Personnel Security">PS — Personnel Security</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 0%; background: var(--red);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">0/1</td>
+          <td class="fam-pct">0%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Risk Assessment">RA — Risk Assessment</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 0%; background: var(--red);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">0/1</td>
+          <td class="fam-pct">0%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="System and Communications Protection">SC — System and Communications Protection</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 25%; background: var(--red);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">0/2</td>
+          <td class="fam-pct">25%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Awareness and Training">AT — Awareness and Training</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 50%; background: var(--orange);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">0/1</td>
+          <td class="fam-pct">50%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Identification and Authentication">IA — Identification and Authentication</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 62%; background: var(--orange);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">2/4</td>
+          <td class="fam-pct">62%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Incident Response">IR — Incident Response</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 75%; background: var(--orange);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">1/2</td>
+          <td class="fam-pct">75%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Access Control">AC — Access Control</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 88%; background: var(--green);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">3/4</td>
+          <td class="fam-pct">88%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="System and Information Integrity">SI — System and Information Integrity</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 88%; background: var(--green);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">3/4</td>
+          <td class="fam-pct">88%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Audit and Accountability">AU — Audit and Accountability</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 90%; background: var(--green);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">4/5</td>
+          <td class="fam-pct">90%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Configuration Management">CM — Configuration Management</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 100%; background: var(--green);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">1/1</td>
+          <td class="fam-pct">100%</td>
+        </tr>
+        <tr>
+          <td class="fam-title" title="Media Protection">MP — Media Protection</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 100%; background: var(--green);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">1/1</td>
+          <td class="fam-pct">100%</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="readiness-panel">
+      <h3>Top gaps to close</h3>
+      <ol class="top-gaps">
+        <li>
+          <div class="gap-header">
+            <code>IA-1</code>
+            <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span>
+            <span class="effort">1 day</span>
+          </div>
+          <div class="gap-title">Identification and Authentication Policy</div>
+          <div class="gap-detail">No matching policy document found in configured SharePoint library.</div>
+        </li>
+        <li>
+          <div class="gap-header">
+            <code>MA-1</code>
+            <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span>
+            <span class="effort">1 day</span>
+          </div>
+          <div class="gap-title">System Maintenance Policy</div>
+          <div class="gap-detail">No matching policy document found in configured SharePoint library.</div>
+        </li>
+        <li>
+          <div class="gap-header">
+            <code>PE-1</code>
+            <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span>
+            <span class="effort">1 day</span>
+          </div>
+          <div class="gap-title">Physical Protection Policy</div>
+          <div class="gap-detail">No matching policy document found in configured SharePoint library.</div>
+        </li>
+        <li>
+          <div class="gap-header">
+            <code>PS-1</code>
+            <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span>
+            <span class="effort">1 day</span>
+          </div>
+          <div class="gap-title">Personnel Security Policy</div>
+          <div class="gap-detail">No matching policy document found in configured SharePoint library.</div>
+        </li>
+        <li>
+          <div class="gap-header">
+            <code>RA-1</code>
+            <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span>
+            <span class="effort">1 day</span>
+          </div>
+          <div class="gap-title">Risk Assessment Policy</div>
+          <div class="gap-detail">No matching policy document found in configured SharePoint library.</div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
   <div class="summary-grid">
     <div class="stat"><span class="number" style="color: var(--green)">15</span><span class="label">Compliant</span></div>
     <div class="stat"><span class="number" style="color: var(--orange)">7</span><span class="label">Partial</span></div>
     <div class="stat"><span class="number" style="color: var(--red)">6</span><span class="label">Not Addressed</span></div>
-    <div class="stat"><span class="number">17</span><span class="label">Automated Maturity</span></div>
+    <div class="stat"><span class="number">17</span><span class="label">Automated</span></div>
   </div>
 </section>
 
@@ -285,10 +599,6 @@
           <li>1 enabled MFA conditional-access policies found <em>(Azure AD conditional access)</em></li>
           <li>Matched policy document(s): Access Control Policy.pdf <em>(SharePoint policies library)</em></li>
         </ul>
-      </div>
-      <div class="remediation"><strong>Remediation (1 hour):</strong>
-        <ol>
-<li>Write a 1-page access control policy covering account lifecycle, privilege assignment, and review cadence.</li><li>Publish to shared drive and require annual acknowledgement.</li>        </ol>
       </div>
     </div>
     <div class="control-card">
@@ -436,10 +746,6 @@
           <li>Matched policy document(s): Audit and Accountability Policy.pdf <em>(SharePoint policies library)</em></li>
         </ul>
       </div>
-      <div class="remediation"><strong>Remediation (0 hours):</strong>
-        <ol>
-<li>Review document annually and re-publish updated version.</li>        </ol>
-      </div>
     </div>
   </div>
   <div class="family-card">
@@ -521,10 +827,6 @@
           <li>Matched policy document(s): System and Information Integrity Policy.pdf <em>(SharePoint policies library)</em></li>
         </ul>
       </div>
-      <div class="remediation"><strong>Remediation (0 hours):</strong>
-        <ol>
-<li>Review document annually and re-publish updated version.</li>        </ol>
-      </div>
     </div>
   </div>
   <div class="family-card">
@@ -536,10 +838,6 @@
         <ul>
           <li>Matched policy document(s): Incident Response Plan.docx <em>(SharePoint policies library)</em></li>
         </ul>
-      </div>
-      <div class="remediation"><strong>Remediation (2 days):</strong>
-        <ol>
-<li>Draft incident response plan: detect, contain, eradicate, recover.</li><li>Define roles, responsibilities, and escalation contacts.</li><li>Run one table-top exercise and document lessons learned.</li>        </ol>
       </div>
     </div>
     <div class="control-card">
@@ -590,10 +888,6 @@
           <li>Matched policy document(s): Configuration Management Policy.pdf <em>(SharePoint policies library)</em></li>
         </ul>
       </div>
-      <div class="remediation"><strong>Remediation (0 hours):</strong>
-        <ol>
-<li>Review document annually and re-publish updated version.</li>        </ol>
-      </div>
     </div>
   </div>
   <div class="family-card">
@@ -620,10 +914,6 @@
         <ul>
           <li>Matched policy document(s): Media Protection Policy.pdf <em>(SharePoint policies library)</em></li>
         </ul>
-      </div>
-      <div class="remediation"><strong>Remediation (0 hours):</strong>
-        <ol>
-<li>Review document annually and re-publish updated version.</li>        </ol>
       </div>
     </div>
   </div>

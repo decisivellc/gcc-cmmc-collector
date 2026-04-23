@@ -68,6 +68,119 @@
     background: linear-gradient(90deg, #1976d2, #2e7d32);
   }
   .progress .pct { font-size: 28px; font-weight: 600; }
+  .readiness-headline {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .readiness-score { min-width: 140px; }
+  .readiness-score .big-pct {
+    display: block;
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .readiness-score .score-label {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .readiness-narrative { flex: 1; min-width: 280px; font-size: 15px; }
+  .readiness-narrative strong { color: var(--ink); }
+  .readiness-bar {
+    width: 100%;
+    height: 10px;
+    background: #e8edf3;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .readiness-bar > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #c62828 0%, #f5a623 50%, #2e7d32 100%);
+  }
+  .readiness-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 900px) {
+    .readiness-grid { grid-template-columns: 1fr; }
+  }
+  .readiness-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .readiness-panel h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  table.heatmap { border: none; background: transparent; }
+  table.heatmap td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  table.heatmap tr:last-child td { border-bottom: none; }
+  table.heatmap .fam-title { font-weight: 600; white-space: nowrap; }
+  table.heatmap .fam-bar { width: 100%; }
+  table.heatmap .fam-stat {
+    text-align: right;
+    color: var(--muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  table.heatmap .fam-pct {
+    text-align: right;
+    font-weight: 600;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    min-width: 44px;
+  }
+  .mini-bar {
+    width: 100%;
+    height: 8px;
+    background: #e8edf3;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mini-bar > span { display: block; height: 100%; }
+  ol.top-gaps { list-style: none; padding: 0; margin: 0; }
+  ol.top-gaps li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  ol.top-gaps li:last-child { border-bottom: none; }
+  .gap-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .gap-header code { font-size: 13px; }
+  .gap-header .effort {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .gap-title { font-weight: 600; font-size: 14px; }
+  .gap-detail { color: var(--muted); font-size: 13px; margin-top: 2px; }
   table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); }
   th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
   th { background: #edf2f7; font-weight: 600; }
@@ -162,15 +275,74 @@
 
 <section id="summary">
   <h2>Overall Readiness</h2>
-  <div class="progress">
-    <span class="pct">{{ summary.overallPercentage }}% Ready</span>
-    <div class="bar"><span style="width: {{ summary.overallPercentage }}%"></span></div>
+
+  <div class="readiness-headline">
+    <div class="readiness-score">
+      <span class="big-pct">{{ readiness.compliant }} / {{ readiness.total }}</span>
+      <span class="score-label">controls assessment-ready</span>
+    </div>
+    <div class="readiness-narrative">
+      <strong>{{ readiness.percentage }}%</strong> weighted readiness
+      ({{ readiness.compliant }} compliant, {{ readiness.partial }} partial, {{ readiness.notAddressed }} not addressed).
+      {% if readiness.quickWins %}
+        <strong>{{ readiness.quickWins }} quick win{{ '' if readiness.quickWins == 1 else 's' }}</strong>
+        available — each estimated at a few hours or less. Closing all of them would move you to
+        <strong>{{ ((readiness.compliant + readiness.quickWins) * 100 / readiness.total) | round | int }}%</strong>.
+      {% elif readiness.partial == 0 and readiness.notAddressed == 0 %}
+        Every tracked control is compliant. Focus next on ongoing evidence capture and annual reviews.
+      {% else %}
+        Remaining gaps require medium-to-heavy effort — see the Remediation Backlog for sequencing.
+      {% endif %}
+      <div class="readiness-bar"><span style="width: {{ readiness.percentage }}%"></span></div>
+    </div>
   </div>
+
+  <div class="readiness-grid">
+    <div class="readiness-panel">
+      <h3>Readiness by control family</h3>
+      <table class="heatmap">
+        {% for row in readiness.familyRows %}
+        <tr>
+          <td class="fam-title" title="{{ row.title }}">{{ row.key }} — {{ row.title }}</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: {{ row.pct }}%; background: {% if row.pct >= 80 %}var(--green){% elif row.pct >= 50 %}var(--orange){% else %}var(--red){% endif %};"></span>
+            </div>
+          </td>
+          <td class="fam-stat">{{ row.compliant }}/{{ row.total }}</td>
+          <td class="fam-pct">{{ row.pct }}%</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="readiness-panel">
+      <h3>Top gaps to close</h3>
+      {% if readiness.topGaps %}
+      <ol class="top-gaps">
+        {% for gap in readiness.topGaps %}
+        <li>
+          <div class="gap-header">
+            <code>{{ gap.id }}</code>
+            <span class="badge badge-{{ gap.status }}">{{ gap.status.replace('_', ' ') }}</span>
+            <span class="effort">{{ gap.effort }}</span>
+          </div>
+          <div class="gap-title">{{ gap.title }}</div>
+          <div class="gap-detail">{{ gap.firstGap }}</div>
+        </li>
+        {% endfor %}
+      </ol>
+      {% else %}
+      <p>All controls compliant — no gaps to prioritize.</p>
+      {% endif %}
+    </div>
+  </div>
+
   <div class="summary-grid">
-    <div class="stat"><span class="number" style="color: var(--green)">{{ summary.compliant }}</span><span class="label">Compliant</span></div>
-    <div class="stat"><span class="number" style="color: var(--orange)">{{ summary.partial }}</span><span class="label">Partial</span></div>
-    <div class="stat"><span class="number" style="color: var(--red)">{{ summary.notAddressed }}</span><span class="label">Not Addressed</span></div>
-    <div class="stat"><span class="number">{{ summary.automatedMaturity }}</span><span class="label">Automated Maturity</span></div>
+    <div class="stat"><span class="number" style="color: var(--green)">{{ readiness.compliant }}</span><span class="label">Compliant</span></div>
+    <div class="stat"><span class="number" style="color: var(--orange)">{{ readiness.partial }}</span><span class="label">Partial</span></div>
+    <div class="stat"><span class="number" style="color: var(--red)">{{ readiness.notAddressed }}</span><span class="label">Not Addressed</span></div>
+    <div class="stat"><span class="number">{{ readiness.automatedMaturity }}</span><span class="label">Automated</span></div>
   </div>
 </section>
 
@@ -273,7 +445,7 @@
         </ul>
       </div>
       {% endif %}
-      {% if control.remediation and control.remediation.steps %}
+      {% if control.status != 'COMPLIANT' and control.remediation and control.remediation.steps %}
       <div class="remediation"><strong>Remediation ({{ control.remediation.effort }}):</strong>
         <ol>
           {% for step in control.remediation.steps %}<li>{{ step }}</li>{% endfor %}
