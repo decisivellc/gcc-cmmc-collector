@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CMMC Readiness Report</title>
+<style>
+  :root {
+    --green: #2e7d32;
+    --orange: #ef6c00;
+    --red: #c62828;
+    --grey: #546e7a;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --ink: #1b2733;
+    --muted: #5a6b7b;
+    --border: #d9e1ea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.5;
+  }
+  header {
+    background: #0b2340;
+    color: #fff;
+    padding: 32px 48px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 26px; }
+  header p { margin: 0; color: #c8d4e6; font-size: 14px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  section { margin-bottom: 40px; }
+  section h2 { margin: 0 0 16px; font-size: 20px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  section h3 { margin: 24px 0 12px; font-size: 17px; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat .number { display: block; font-size: 32px; font-weight: 600; }
+  .stat .label { display: block; color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .progress {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .progress .bar {
+    height: 14px;
+    background: #e8edf3;
+    border-radius: 7px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress .bar > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #1976d2, #2e7d32);
+  }
+  .progress .pct { font-size: 28px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { background: #edf2f7; font-weight: 600; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .badge-COMPLIANT { background: var(--green); }
+  .badge-PARTIAL { background: var(--orange); }
+  .badge-NOT_ADDRESSED { background: var(--red); }
+  .badge-compliant { background: var(--green); }
+  .badge-noncompliant { background: var(--orange); }
+  .badge-unknown { background: var(--grey); }
+  .family-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .control-card {
+    border-top: 1px solid var(--border);
+    padding: 14px 0;
+  }
+  .control-card:first-of-type { border-top: none; }
+  .control-card h4 { margin: 0 0 6px; font-size: 15px; }
+  .control-card .meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .control-card ul, .control-card ol { margin: 6px 0 0 20px; padding: 0; }
+  .control-card li { font-size: 13px; color: var(--ink); }
+  .remediation {
+    background: #fff7ed;
+    border-left: 3px solid var(--orange);
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-radius: 4px;
+  }
+  .evidence {
+    background: #f1f8e9;
+    border-left: 3px solid var(--green);
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-radius: 4px;
+  }
+  .gaps {
+    background: #ffebee;
+    border-left: 3px solid var(--red);
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-radius: 4px;
+  }
+  .backlog-group h3 span { font-weight: 400; color: var(--muted); font-size: 14px; margin-left: 8px; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 24px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<header>
+  <h1>CMMC Level 2 Readiness Report</h1>
+  <p>Generated: 2099-04-20 14:30 UTC &middot; Evidence collected: 2099-04-20T14:30:00+00:00</p>
+</header>
+<main>
+
+<section id="summary">
+  <h2>Overall Readiness</h2>
+  <div class="progress">
+    <span class="pct">69% Ready</span>
+    <div class="bar"><span style="width: 69%"></span></div>
+  </div>
+  <div class="summary-grid">
+    <div class="stat"><span class="number" style="color: var(--green)">9</span><span class="label">Compliant</span></div>
+    <div class="stat"><span class="number" style="color: var(--orange)">7</span><span class="label">Partial</span></div>
+    <div class="stat"><span class="number" style="color: var(--red)">2</span><span class="label">Not Addressed</span></div>
+    <div class="stat"><span class="number">11</span><span class="label">Automated Maturity</span></div>
+  </div>
+</section>
+
+<section id="users">
+  <h2>Identity Summary</h2>
+  <div class="summary-grid">
+    <div class="stat"><span class="number">4</span><span class="label">Total Users</span></div>
+    <div class="stat"><span class="number">3</span><span class="label">Active</span></div>
+    <div class="stat"><span class="number">67%</span><span class="label">MFA Coverage</span></div>
+    <div class="stat"><span class="number">1</span><span class="label">Inactive &gt; 30 days</span></div>
+  </div>
+</section>
+
+<section id="devices">
+  <h2>Device Compliance (3)</h2>
+  <table>
+    <thead><tr><th>Device</th><th>OS Version</th><th>Compliance</th><th>Last Sync</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>MacBook-ALICE-001</td>
+        <td>14.4.1</td>
+        <td><span class="badge badge-compliant">compliant</span></td>
+        <td>0 days ago</td>
+      </tr>
+      <tr>
+        <td>MacBook-BOB-002</td>
+        <td>14.4.1</td>
+        <td><span class="badge badge-compliant">compliant</span></td>
+        <td>1 days ago</td>
+      </tr>
+      <tr>
+        <td>MacBook-CHARLIE-003</td>
+        <td>13.6.0</td>
+        <td><span class="badge badge-noncompliant">noncompliant</span></td>
+        <td>10 days ago</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="controls">
+  <h2>Control Status by Family</h2>
+  <div class="family-card">
+    <h3>AC &mdash; Access Control</h3>
+    <div class="control-card">
+      <h4>AC-1: Access Control Policy and Procedures <span class="badge badge-PARTIAL">PARTIAL</span></h4>
+      <div class="meta">Maturity: Manual Verification Needed</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>1 enabled MFA conditional-access policies found <em>(Azure AD conditional access)</em></li>
+        </ul>
+      </div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>Written access control policy document not verified by this tool.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 hour):</strong>
+        <ol>
+<li>Write a 1-page access control policy covering account lifecycle, privilege assignment, and review cadence.</li><li>Publish to shared drive and require annual acknowledgement.</li>        </ol>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>AC-2: Account Management <span class="badge badge-PARTIAL">PARTIAL</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>3 active users <em>(Azure AD)</em></li>
+          <li>2/3 users with MFA registered <em>(Azure AD)</em></li>
+          <li>1 inactive users (&gt;30 days since sign-in) <em>(Azure AD)</em></li>
+        </ul>
+      </div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>1 user accounts inactive for &gt;30 days.</li><li>1 active users without registered MFA.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1-2 hours):</strong>
+        <ol>
+<li>Disable 1 inactive accounts in Entra admin center.</li><li>Register MFA for remaining active users.</li>        </ol>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>AC-3: Access Enforcement <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>2 enabled conditional-access policies enforcing access decisions. <em>(Azure AD)</em></li>
+        </ul>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>AC-6: Least Privilege <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>1 users hold one or more privileged roles <em>(Azure AD)</em></li>
+          <li>1 Global Administrators <em>(Azure AD)</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>IA &mdash; Identification and Authentication</h3>
+    <div class="control-card">
+      <h4>IA-2: Identification and Authentication (Users) <span class="badge badge-PARTIAL">PARTIAL</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>2/3 active users with MFA registered <em>(Azure AD)</em></li>
+          <li>1 conditional-access policies enforcing MFA <em>(Azure AD)</em></li>
+        </ul>
+      </div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>1 active users without MFA registration.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 hour):</strong>
+        <ol>
+<li>Require remaining users to register MFA on next sign-in.</li>        </ol>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>IA-4: Identifier Management <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>4 total identifiers, 1 disabled accounts retained for audit. <em>(Azure AD)</em></li>
+        </ul>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>IA-5: Authenticator Management <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Minimum length 12, complexity=True <em>(Azure AD password policy)</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>AU &mdash; Audit and Accountability</h3>
+    <div class="control-card">
+      <h4>AU-2: Audit Events <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>1 recent directory-audit events observed <em>(Azure AD audit)</em></li>
+        </ul>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>AU-3: Content of Audit Records <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Sample record fields: who=True, what=True, when=True <em>(Azure AD audit)</em></li>
+        </ul>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>AU-6: Audit Review, Analysis, and Reporting <span class="badge badge-PARTIAL">PARTIAL</span></h4>
+      <div class="meta">Maturity: Manual Verification Needed</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Audit data is collected; review cadence must be documented manually. <em>(Azure AD)</em></li>
+        </ul>
+      </div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>No automated evidence of recurring review or escalation process.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 day):</strong>
+        <ol>
+<li>Document weekly audit-review procedure and assign an owner.</li><li>Configure Sentinel or Log Analytics alerts for privileged operations.</li>        </ol>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>AU-12: Audit Generation <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Directory audit available <em>(Azure AD)</em></li>
+          <li>Exchange audit available <em>(Exchange)</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>SC &mdash; System and Communications Protection</h3>
+    <div class="control-card">
+      <h4>SC-7: Boundary Protection <span class="badge badge-PARTIAL">PARTIAL</span></h4>
+      <div class="meta">Maturity: Manual Verification Needed</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>1 conditional-access policies restricting boundary access. <em>(Azure AD)</em></li>
+        </ul>
+      </div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>Network-level boundary enforcement must be verified manually.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 day):</strong>
+        <ol>
+<li>Create conditional-access policy blocking legacy authentication.</li><li>Require compliant device for CUI-containing applications.</li>        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>SI &mdash; System and Information Integrity</h3>
+    <div class="control-card">
+      <h4>SI-2: Flaw Remediation <span class="badge badge-PARTIAL">PARTIAL</span></h4>
+      <div class="meta">Maturity: Not Addressed</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>2/3 managed devices compliant <em>(Intune)</em></li>
+          <li>1 devices on macOS versions below 14.3 <em>(Intune)</em></li>
+        </ul>
+      </div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>1 devices below macOS 14.3.</li><li>1 non-compliant devices.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 day):</strong>
+        <ol>
+<li>Push software-update policy requiring macOS 14.3+.</li><li>Remediate non-compliant devices via Intune company portal.</li>        </ol>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>SI-3: Malicious Code Protection <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>3 endpoints with healthy antivirus agent, 0 unhealthy. <em>(Defender (via Intune))</em></li>
+          <li>0 active threats in past 90 days. <em>(Defender)</em></li>
+        </ul>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>SI-4: System Monitoring <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Secure Score: 620/800 (78%) <em>(Microsoft Secure Score)</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>IR &mdash; Incident Response</h3>
+    <div class="control-card">
+      <h4>IR-1: Incident Response Policy <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
+      <div class="meta">Maturity: Not Addressed</div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>No automated evidence: requires a written incident response plan.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (2 days):</strong>
+        <ol>
+<li>Draft incident response plan: detect, contain, eradicate, recover.</li><li>Define roles, responsibilities, and escalation contacts.</li><li>Run one table-top exercise and document lessons learned.</li>        </ol>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>IR-4: Incident Handling <span class="badge badge-PARTIAL">PARTIAL</span></h4>
+      <div class="meta">Maturity: Manual Verification Needed</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>2 threats resolved in past 90 days (tooling present) <em>(Defender)</em></li>
+        </ul>
+      </div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>Incident-handling runbooks must be documented and tabletop-tested.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (3 days):</strong>
+        <ol>
+<li>Create runbooks for top 3 incident types (phishing, malware, data leak).</li><li>Conduct one tabletop exercise and capture action items.</li>        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>AT &mdash; Awareness and Training</h3>
+    <div class="control-card">
+      <h4>AT-1: Security Awareness Training <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
+      <div class="meta">Maturity: Not Addressed</div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>No automated signal: track completion in an LMS or Attack Simulation Training.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (2 days):</strong>
+        <ol>
+<li>Deploy Microsoft Attack Simulation Training or equivalent LMS.</li><li>Require annual completion and retain certificates.</li>        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="backlog">
+  <h2>Prioritized Remediation Backlog</h2>
+  <div class="backlog-group">
+    <h3>Quick Wins <span>(&lt; 1 day each)</span></h3>
+    <ul>
+      <li><strong>AC-1</strong>: Written access control policy document not verified by this tool. <em>(1 hour)</em></li>
+      <li><strong>AC-2</strong>: 1 user accounts inactive for &gt;30 days.; 1 active users without registered MFA. <em>(1-2 hours)</em></li>
+      <li><strong>IA-2</strong>: 1 active users without MFA registration. <em>(1 hour)</em></li>
+    </ul>
+  </div>
+  <div class="backlog-group">
+    <h3>Medium Effort <span>(1-3 days each)</span></h3>
+    <ul>
+      <li><strong>AU-6</strong>: No automated evidence of recurring review or escalation process. <em>(1 day)</em></li>
+      <li><strong>SC-7</strong>: Network-level boundary enforcement must be verified manually. <em>(1 day)</em></li>
+      <li><strong>SI-2</strong>: 1 devices below macOS 14.3.; 1 non-compliant devices. <em>(1 day)</em></li>
+      <li><strong>AT-1</strong>: No automated signal: track completion in an LMS or Attack Simulation Training. <em>(2 days)</em></li>
+    </ul>
+  </div>
+  <div class="backlog-group">
+    <h3>Heavy Lift <span>(&gt; 1 week each)</span></h3>
+    <ul>
+      <li><strong>IR-1</strong>: No automated evidence: requires a written incident response plan. <em>(2 days)</em></li>
+      <li><strong>IR-4</strong>: Incident-handling runbooks must be documented and tabletop-tested. <em>(3 days)</em></li>
+    </ul>
+  </div>
+</section>
+
+</main>
+<footer>
+  Generated by cmmc-gcc-collector &middot; 2099-04-20 14:30 UTC
+</footer>
+</body>
+</html>

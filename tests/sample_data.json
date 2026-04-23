@@ -1,0 +1,250 @@
+{
+  "azure_ad": {
+    "users": [
+      {
+        "id": "user-1",
+        "userPrincipalName": "alice@contoso.onmicrosoft.us",
+        "displayName": "Alice Smith",
+        "accountEnabled": true,
+        "createdDateTime": "2024-01-15T10:00:00Z",
+        "signInActivity": {
+          "lastSignInDateTime": "2099-04-20T10:00:00Z",
+          "lastNonInteractiveSignInDateTime": "2099-04-20T10:00:00Z"
+        },
+        "mfaStatus": "enabled",
+        "assignedRoles": ["Global Administrator"],
+        "lastActiveInDays": 0
+      },
+      {
+        "id": "user-2",
+        "userPrincipalName": "bob@contoso.onmicrosoft.us",
+        "displayName": "Bob Jones",
+        "accountEnabled": true,
+        "createdDateTime": "2024-02-10T10:00:00Z",
+        "signInActivity": {
+          "lastSignInDateTime": "2099-04-18T09:00:00Z",
+          "lastNonInteractiveSignInDateTime": "2099-04-18T09:00:00Z"
+        },
+        "mfaStatus": "enabled",
+        "assignedRoles": [],
+        "lastActiveInDays": 2
+      },
+      {
+        "id": "user-3",
+        "userPrincipalName": "charlie@contoso.onmicrosoft.us",
+        "displayName": "Charlie Brown",
+        "accountEnabled": true,
+        "createdDateTime": "2023-12-01T10:00:00Z",
+        "signInActivity": {
+          "lastSignInDateTime": "2099-01-01T09:00:00Z",
+          "lastNonInteractiveSignInDateTime": "2099-01-01T09:00:00Z"
+        },
+        "mfaStatus": "disabled",
+        "assignedRoles": [],
+        "lastActiveInDays": 110
+      },
+      {
+        "id": "user-4",
+        "userPrincipalName": "dana@contoso.onmicrosoft.us",
+        "displayName": "Dana Davis",
+        "accountEnabled": false,
+        "createdDateTime": "2022-06-01T10:00:00Z",
+        "signInActivity": {
+          "lastSignInDateTime": null,
+          "lastNonInteractiveSignInDateTime": null
+        },
+        "mfaStatus": "unknown",
+        "assignedRoles": [],
+        "lastActiveInDays": null
+      }
+    ],
+    "passwordPolicy": {
+      "enforcedPasswordPolicyId": "policy-1",
+      "minimumPasswordLength": 12,
+      "passwordExpirationDays": 60,
+      "requiresComplexity": true,
+      "requiresNonAlphanumeric": true
+    },
+    "conditionalAccessPolicies": [
+      {
+        "displayName": "Require MFA for all users",
+        "state": "enabled",
+        "grantControls": ["mfa"],
+        "conditions": {"applications": ["All"], "users": ["All"]}
+      },
+      {
+        "displayName": "Block legacy authentication",
+        "state": "enabled",
+        "grantControls": ["block"],
+        "conditions": {"applications": ["All"], "users": ["All"]}
+      }
+    ],
+    "auditLogs": {
+      "sample": [
+        {
+          "activityDateTime": "2099-04-20T14:30:00Z",
+          "operationType": "Update",
+          "activityDisplayName": "Update user",
+          "result": "success",
+          "initiatedBy": "admin@contoso.onmicrosoft.us",
+          "targetResources": ["User"]
+        }
+      ],
+      "logsAvailable": true,
+      "retentionDays": 30
+    },
+    "signInRisks": {
+      "detectedInPast90Days": 0,
+      "sample": []
+    }
+  },
+  "intune": {
+    "devices": [
+      {
+        "id": "dev-1",
+        "deviceName": "MacBook-ALICE-001",
+        "operatingSystem": "macOS",
+        "osVersion": "14.4.1",
+        "enrollmentType": "macOSEnrollment",
+        "enrollmentDate": "2024-03-01T00:00:00Z",
+        "lastSyncDateTime": "2099-04-20T00:00:00Z",
+        "complianceState": "compliant",
+        "managementState": "managed",
+        "encryption": {"encryptionStatus": "encrypted", "encryptionReadiness": "ready"},
+        "lastSyncDaysAgo": 0,
+        "complianceDetails": {
+          "osVersion": "14.4.1",
+          "fileVaultEnabled": "Yes",
+          "passwordRequired": "Yes",
+          "jailBroken": "Unknown",
+          "azureADRegistered": "Yes"
+        }
+      },
+      {
+        "id": "dev-2",
+        "deviceName": "MacBook-BOB-002",
+        "operatingSystem": "macOS",
+        "osVersion": "14.4.1",
+        "enrollmentType": "macOSEnrollment",
+        "enrollmentDate": "2024-03-05T00:00:00Z",
+        "lastSyncDateTime": "2099-04-19T00:00:00Z",
+        "complianceState": "compliant",
+        "managementState": "managed",
+        "encryption": {"encryptionStatus": "encrypted", "encryptionReadiness": "ready"},
+        "lastSyncDaysAgo": 1,
+        "complianceDetails": {
+          "osVersion": "14.4.1",
+          "fileVaultEnabled": "Yes",
+          "passwordRequired": "Yes",
+          "jailBroken": "Unknown",
+          "azureADRegistered": "Yes"
+        }
+      },
+      {
+        "id": "dev-3",
+        "deviceName": "MacBook-CHARLIE-003",
+        "operatingSystem": "macOS",
+        "osVersion": "13.6.0",
+        "enrollmentType": "macOSEnrollment",
+        "enrollmentDate": "2023-08-01T00:00:00Z",
+        "lastSyncDateTime": "2099-04-10T00:00:00Z",
+        "complianceState": "noncompliant",
+        "managementState": "managed",
+        "encryption": {"encryptionStatus": "encrypted", "encryptionReadiness": "ready"},
+        "lastSyncDaysAgo": 10,
+        "complianceDetails": {
+          "osVersion": "13.6.0",
+          "fileVaultEnabled": "Yes",
+          "passwordRequired": "Yes",
+          "jailBroken": "Unknown",
+          "azureADRegistered": "Yes"
+        }
+      }
+    ],
+    "compliancePolicies": [
+      {
+        "displayName": "macOS Security Baseline",
+        "id": "policy-1",
+        "deployedToDevices": 3,
+        "compliantDevices": 2,
+        "nonCompliantDevices": 1
+      }
+    ],
+    "deviceComplianceSummary": {
+      "totalDevices": 3,
+      "compliantDevices": 2,
+      "compliancePercentage": 67,
+      "lastAuditDate": "2099-04-20T14:30:00Z"
+    }
+  },
+  "defender": {
+    "vulnerabilities": {
+      "byDevice": {
+        "MacBook-ALICE-001": {"critical": 0, "high": 0, "medium": 2, "low": 4, "total": 6},
+        "MacBook-BOB-002": {"critical": 0, "high": 1, "medium": 3, "low": 5, "total": 9}
+      },
+      "summary": {"totalCritical": 0, "totalHigh": 1, "totalMedium": 5, "totalLow": 9}
+    },
+    "threatDetections": {
+      "activeThreats": 0,
+      "resolvedInPast90Days": 2,
+      "sampleThreats": []
+    },
+    "securityUpdates": {
+      "missingCriticalPatches": 0,
+      "devices": [],
+      "note": "Patch status derived from Intune compliance state."
+    },
+    "antivirusStatus": {
+      "agentHealthy": 3,
+      "agentNotHealthy": 0,
+      "definitionStatus": {
+        "upToDate": 3,
+        "outOfDate": 0,
+        "lastUpdateTime": "2099-04-20T14:30:00Z"
+      },
+      "source": "Intune managedDevices (Defender fallback)"
+    },
+    "secureScore": {
+      "currentScore": 620,
+      "maxScore": 800,
+      "capturedDate": "2099-04-20T00:00:00Z"
+    }
+  },
+  "exchange": {
+    "mailboxes": [
+      {
+        "id": "user-1",
+        "displayName": "Alice Smith",
+        "primarySmtpAddress": "alice@contoso.onmicrosoft.us",
+        "auditEnabled": true,
+        "auditLog": {
+          "recordCount": null,
+          "dateRange": {"oldest": null, "newest": null},
+          "note": "Exchange mailbox audit detail requires the Security & Compliance PowerShell module."
+        }
+      }
+    ],
+    "dlpPolicies": [
+      {"id": "dlp-1", "name": "PII Protection", "enabled": true, "mode": "Enforce", "rules": 3}
+    ],
+    "dlpRuleMatches": {
+      "past90Days": 0,
+      "sampleMatches": [],
+      "note": "DLP rule matches are not exposed through the GCC-High Graph surface."
+    },
+    "exchangeAuditLog": {
+      "logsAvailable": true,
+      "oldestRecord": "2099-01-20T00:00:00Z",
+      "newestRecord": "2099-04-20T00:00:00Z",
+      "sampleEvents": [
+        {
+          "creationTime": "2099-04-20T14:30:00Z",
+          "operation": "Update mailbox",
+          "organizationName": "admin@contoso.onmicrosoft.us",
+          "resultStatus": "success"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "tenant_id": "YOUR_TENANT_ID_HERE",
+  "client_id": "YOUR_APP_ID_HERE",
+  "client_secret": "YOUR_CLIENT_SECRET_HERE",
+  "authority": "https://login.microsoftonline.us",
+  "graph_base_url": "https://graph.microsoft.us/v1.0",
+  "reporting": {
+    "output_path": "./reports",
+    "format": "html",
+    "generate_json": true,
+    "generate_remediation_backlog": true
+  },
+  "collectors": {
+    "azure_ad": {
+      "enabled": true,
+      "inactivity_threshold_days": 30
+    },
+    "intune": {
+      "enabled": true,
+      "device_sync_threshold_days": 30,
+      "filter_os": "macOS"
+    },
+    "defender": {
+      "enabled": true,
+      "vulnerability_threshold_severity": "high"
+    },
+    "exchange": {
+      "enabled": true
+    }
+  },
+  "schedule": {
+    "type": "on_demand",
+    "comment": "Set to 'weekly' if running via GitHub Actions"
+  }
+}

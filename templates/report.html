@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CMMC Readiness Report</title>
+<style>
+  :root {
+    --green: #2e7d32;
+    --orange: #ef6c00;
+    --red: #c62828;
+    --grey: #546e7a;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --ink: #1b2733;
+    --muted: #5a6b7b;
+    --border: #d9e1ea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.5;
+  }
+  header {
+    background: #0b2340;
+    color: #fff;
+    padding: 32px 48px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 26px; }
+  header p { margin: 0; color: #c8d4e6; font-size: 14px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  section { margin-bottom: 40px; }
+  section h2 { margin: 0 0 16px; font-size: 20px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  section h3 { margin: 24px 0 12px; font-size: 17px; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat .number { display: block; font-size: 32px; font-weight: 600; }
+  .stat .label { display: block; color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .progress {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .progress .bar {
+    height: 14px;
+    background: #e8edf3;
+    border-radius: 7px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress .bar > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #1976d2, #2e7d32);
+  }
+  .progress .pct { font-size: 28px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { background: #edf2f7; font-weight: 600; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .badge-COMPLIANT { background: var(--green); }
+  .badge-PARTIAL { background: var(--orange); }
+  .badge-NOT_ADDRESSED { background: var(--red); }
+  .badge-compliant { background: var(--green); }
+  .badge-noncompliant { background: var(--orange); }
+  .badge-unknown { background: var(--grey); }
+  .family-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .control-card {
+    border-top: 1px solid var(--border);
+    padding: 14px 0;
+  }
+  .control-card:first-of-type { border-top: none; }
+  .control-card h4 { margin: 0 0 6px; font-size: 15px; }
+  .control-card .meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .control-card ul, .control-card ol { margin: 6px 0 0 20px; padding: 0; }
+  .control-card li { font-size: 13px; color: var(--ink); }
+  .remediation {
+    background: #fff7ed;
+    border-left: 3px solid var(--orange);
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-radius: 4px;
+  }
+  .evidence {
+    background: #f1f8e9;
+    border-left: 3px solid var(--green);
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-radius: 4px;
+  }
+  .gaps {
+    background: #ffebee;
+    border-left: 3px solid var(--red);
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-radius: 4px;
+  }
+  .backlog-group h3 span { font-weight: 400; color: var(--muted); font-size: 14px; margin-left: 8px; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 24px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<header>
+  <h1>CMMC Level 2 Readiness Report</h1>
+  <p>Generated: {{ report_date }}{% if collected_at %} &middot; Evidence collected: {{ collected_at }}{% endif %}</p>
+</header>
+<main>
+
+<section id="summary">
+  <h2>Overall Readiness</h2>
+  <div class="progress">
+    <span class="pct">{{ summary.overallPercentage }}% Ready</span>
+    <div class="bar"><span style="width: {{ summary.overallPercentage }}%"></span></div>
+  </div>
+  <div class="summary-grid">
+    <div class="stat"><span class="number" style="color: var(--green)">{{ summary.compliant }}</span><span class="label">Compliant</span></div>
+    <div class="stat"><span class="number" style="color: var(--orange)">{{ summary.partial }}</span><span class="label">Partial</span></div>
+    <div class="stat"><span class="number" style="color: var(--red)">{{ summary.notAddressed }}</span><span class="label">Not Addressed</span></div>
+    <div class="stat"><span class="number">{{ summary.automatedMaturity }}</span><span class="label">Automated Maturity</span></div>
+  </div>
+</section>
+
+<section id="users">
+  <h2>Identity Summary</h2>
+  <div class="summary-grid">
+    <div class="stat"><span class="number">{{ user_summary.total }}</span><span class="label">Total Users</span></div>
+    <div class="stat"><span class="number">{{ user_summary.active }}</span><span class="label">Active</span></div>
+    <div class="stat"><span class="number">{{ user_summary.mfaPercent }}%</span><span class="label">MFA Coverage</span></div>
+    <div class="stat"><span class="number">{{ user_summary.inactive }}</span><span class="label">Inactive &gt; 30 days</span></div>
+  </div>
+</section>
+
+<section id="devices">
+  <h2>Device Compliance ({{ devices|length }})</h2>
+  {% if intune_available %}
+  <table>
+    <thead><tr><th>Device</th><th>OS Version</th><th>Compliance</th><th>Last Sync</th></tr></thead>
+    <tbody>
+      {% for device in devices %}
+      <tr>
+        <td>{{ device.deviceName }}</td>
+        <td>{{ device.osVersion or 'n/a' }}</td>
+        <td><span class="badge badge-{{ device.complianceState }}">{{ device.complianceState }}</span></td>
+        <td>{% if device.lastSyncDaysAgo is none %}never{% else %}{{ device.lastSyncDaysAgo }} days ago{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No Intune device data available for this run.</p>
+  {% endif %}
+</section>
+
+<section id="controls">
+  <h2>Control Status by Family</h2>
+  {% for family in control_families %}
+  <div class="family-card">
+    <h3>{{ family.key }} &mdash; {{ family.title }}</h3>
+    {% for control in family.controls %}
+    <div class="control-card">
+      <h4>{{ control.id }}: {{ control.title }} <span class="badge badge-{{ control.status }}">{{ control.status.replace('_', ' ') }}</span></h4>
+      <div class="meta">Maturity: {{ control.maturity }}</div>
+      {% if control.evidence %}
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          {% for item in control.evidence %}
+          <li>{{ item.detail }} <em>({{ item.source }})</em></li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% if control.gaps %}
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+          {% for gap in control.gaps %}<li>{{ gap }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% if control.remediation and control.remediation.steps %}
+      <div class="remediation"><strong>Remediation ({{ control.remediation.effort }}):</strong>
+        <ol>
+          {% for step in control.remediation.steps %}<li>{{ step }}</li>{% endfor %}
+        </ol>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</section>
+
+<section id="backlog">
+  <h2>Prioritized Remediation Backlog</h2>
+  <div class="backlog-group">
+    <h3>Quick Wins <span>(&lt; 1 day each)</span></h3>
+    {% if remediation.quick_win %}
+    <ul>
+      {% for task in remediation.quick_win %}
+      <li><strong>{{ task.control }}</strong>: {{ task.description }} <em>({{ task.effort }})</em></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p>No quick wins outstanding.</p>{% endif %}
+  </div>
+  <div class="backlog-group">
+    <h3>Medium Effort <span>(1-3 days each)</span></h3>
+    {% if remediation.medium %}
+    <ul>
+      {% for task in remediation.medium %}
+      <li><strong>{{ task.control }}</strong>: {{ task.description }} <em>({{ task.effort }})</em></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p>No medium-effort tasks outstanding.</p>{% endif %}
+  </div>
+  <div class="backlog-group">
+    <h3>Heavy Lift <span>(&gt; 1 week each)</span></h3>
+    {% if remediation.heavy_lift %}
+    <ul>
+      {% for task in remediation.heavy_lift %}
+      <li><strong>{{ task.control }}</strong>: {{ task.description }} <em>({{ task.effort }})</em></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p>No heavy-lift items outstanding.</p>{% endif %}
+  </div>
+</section>
+
+</main>
+<footer>
+  Generated by cmmc-gcc-collector &middot; {{ report_date }}
+</footer>
+</body>
+</html>
