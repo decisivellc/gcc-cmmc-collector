@@ -17,9 +17,25 @@ class BaseCollector:
 
     def __init__(self, client: GraphClient) -> None:
         self.client = client
+        self.warnings: list[dict[str, Any]] = []
 
     def collect(self) -> dict[str, Any]:
         raise NotImplementedError
+
+    def _record_warning(self, path: str, exc: Exception, paginated: bool) -> None:
+        status = None
+        response = getattr(exc, "response", None)
+        if response is not None:
+            status = getattr(response, "status_code", None)
+        self.warnings.append(
+            {
+                "collector": self.name,
+                "endpoint": path,
+                "status": status,
+                "error": str(exc),
+                "paginated": paginated,
+            }
+        )
 
     def _safe_get(
         self,
@@ -32,6 +48,7 @@ class BaseCollector:
             return self.client.get(path, params=params)
         except Exception as exc:
             logger.warning("%s: GET %s failed: %s", self.name, path, exc)
+            self._record_warning(path, exc, paginated=False)
             return default
 
     def _safe_get_all(
@@ -44,4 +61,5 @@ class BaseCollector:
             return self.client.get_all(path, params=params)
         except Exception as exc:
             logger.warning("%s: GET %s (paginated) failed: %s", self.name, path, exc)
+            self._record_warning(path, exc, paginated=True)
             return []

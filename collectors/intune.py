@@ -92,7 +92,11 @@ class IntuneCollector(BaseCollector):
 
 
 def collect(client: GraphClient) -> dict[str, Any]:
-    return IntuneCollector(client).collect()
+    collector = IntuneCollector(client)
+    result = collector.collect()
+    if collector.warnings:
+        result["_collectionWarnings"] = collector.warnings
+    return result
 
 
 def _compliance_details(entry: dict[str, Any]) -> dict[str, str]:

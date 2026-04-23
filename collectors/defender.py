@@ -104,7 +104,11 @@ class DefenderCollector(BaseCollector):
 
 
 def collect(client: GraphClient) -> dict[str, Any]:
-    return DefenderCollector(client).collect()
+    collector = DefenderCollector(client)
+    result = collector.collect()
+    if collector.warnings:
+        result["_collectionWarnings"] = collector.warnings
+    return result
 
 
 def _bucket_vulnerabilities(vulns: list[dict[str, Any]]) -> dict[str, Any]:

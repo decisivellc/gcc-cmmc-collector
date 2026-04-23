@@ -133,6 +133,33 @@
 </header>
 <main>
 
+{% if collection_warnings %}
+<section id="collection-warnings" style="border: 1px solid var(--orange); background: #fff6e5; padding: 16px 20px; border-radius: 6px; margin-bottom: 32px;">
+  <h2 style="color: var(--orange); border-bottom: none; margin: 0 0 8px; font-size: 18px;">Collection Warnings ({{ collection_warnings|length }})</h2>
+  <p style="margin: 0 0 12px;">The following Graph endpoints failed during collection. Controls that depend on them may appear more favorable than the tenant's actual posture &mdash; treat as "unknown," not "clean."</p>
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+    <thead>
+      <tr style="text-align: left; border-bottom: 1px solid var(--border);">
+        <th style="padding: 6px 8px;">Collector</th>
+        <th style="padding: 6px 8px;">Endpoint</th>
+        <th style="padding: 6px 8px;">HTTP</th>
+        <th style="padding: 6px 8px;">Error</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for w in collection_warnings %}
+      <tr style="border-bottom: 1px solid var(--border);">
+        <td style="padding: 6px 8px;"><code>{{ w.collector }}</code></td>
+        <td style="padding: 6px 8px;"><code>{{ w.endpoint }}</code></td>
+        <td style="padding: 6px 8px;">{{ w.status if w.status is not none else '&mdash;' }}</td>
+        <td style="padding: 6px 8px; color: var(--muted);">{{ w.error }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
 <section id="summary">
   <h2>Overall Readiness</h2>
   <div class="progress">

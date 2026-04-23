@@ -128,4 +128,8 @@ class ExchangeCollector(BaseCollector):
 
 
 def collect(client: GraphClient) -> dict[str, Any]:
-    return ExchangeCollector(client).collect()
+    collector = ExchangeCollector(client)
+    result = collector.collect()
+    if collector.warnings:
+        result["_collectionWarnings"] = collector.warnings
+    return result

@@ -202,7 +202,11 @@ class AzureADCollector(BaseCollector):
 
 
 def collect(client: GraphClient) -> dict[str, Any]:
-    return AzureADCollector(client).collect()
+    collector = AzureADCollector(client)
+    result = collector.collect()
+    if collector.warnings:
+        result["_collectionWarnings"] = collector.warnings
+    return result
 
 
 def _days_since(iso_timestamp: str | None) -> int | None:

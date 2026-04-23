@@ -126,7 +126,16 @@ def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any])
         intune_available=bool(intune_data.get("devices")),
         user_summary=_user_summary(azure_data),
         remediation=remediation,
+        collection_warnings=evidence.get("collection_warnings") or [],
     )
+
+
+def _flatten_collection_warnings(collected: dict[str, Any]) -> list[dict[str, Any]]:
+    warnings: list[dict[str, Any]] = []
+    for data in collected.values():
+        if isinstance(data, dict):
+            warnings.extend(data.get("_collectionWarnings") or [])
+    return warnings
 
 
 def generate_remediation_backlog(compliance_status: dict[str, Any]) -> dict[str, Any]:
@@ -238,6 +247,7 @@ def main(argv: list[str] | None = None) -> int:
     evidence = {
         "collected_at": datetime.now(timezone.utc).isoformat(),
         "tenant_id": config["tenant_id"],
+        "collection_warnings": _flatten_collection_warnings(collected),
         **collected,
     }
     compliance_status = nist_800_171.map(evidence)
