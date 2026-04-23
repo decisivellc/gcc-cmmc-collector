@@ -65,8 +65,9 @@ def test_si2_partial_when_noncompliant_device(sample_evidence):
     assert any("13.6" in gap or "14.3" in gap or "non-compliant" in gap.lower() for gap in si2["gaps"])
 
 
-def test_ir1_always_not_addressed(sample_evidence):
-    result = nist_800_171.map(sample_evidence)
+def test_ir1_and_at1_not_addressed_without_policy_docs(sample_evidence):
+    evidence = {k: v for k, v in sample_evidence.items() if k != "policies"}
+    result = nist_800_171.map(evidence)
     assert result["controls"]["IR-1"]["status"] == STATUS_NOT_ADDRESSED
     assert result["controls"]["AT-1"]["status"] == STATUS_NOT_ADDRESSED
 

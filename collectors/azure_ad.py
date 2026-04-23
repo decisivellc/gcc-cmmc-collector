@@ -179,24 +179,44 @@ class AzureADCollector(BaseCollector):
         }
 
     def _collect_sign_in_risks(self) -> dict[str, Any]:
-        params = {
-            "$filter": "riskLevel eq 'high' or riskLevel eq 'medium'",
-            "$orderby": "detectedDateTime desc",
-            "$top": "50",
-        }
-        raw = self._safe_get_all("/identity/riskDetections", params=params)
-        sample = []
-        for entry in raw[:25]:
-            sample.append(
-                {
-                    "detectedDateTime": entry.get("detectedDateTime"),
-                    "riskLevel": entry.get("riskLevel"),
-                    "riskType": entry.get("riskEventType"),
-                    "userPrincipalName": entry.get("userPrincipalName"),
-                }
+        warnings_before = len(self.warnings)
+        raw = self._safe_get_all(
+            "/identity/riskDetections",
+            params={"$top": "100"},
+        )
+        new_warnings = self.warnings[warnings_before:]
+        last_status = new_warnings[-1]["status"] if new_warnings else None
+        if last_status == 400:
+            new_warnings[-1]["error"] = (
+                "400 from /identity/riskDetections — typically indicates the tenant "
+                "does not have Azure AD Premium P2 (required for risk detection data)."
             )
+            return {
+                "available": False,
+                "detectedInPast90Days": 0,
+                "sample": [],
+                "note": (
+                    "/identity/riskDetections returned 400 — typically indicates "
+                    "the tenant does not have Azure AD Premium P2. Upgrade licensing "
+                    "or collect sign-in risks via the Entra portal."
+                ),
+            }
+        filtered = [
+            entry for entry in raw
+            if (entry.get("riskLevel") or "").lower() in {"high", "medium"}
+        ]
+        filtered.sort(key=lambda e: e.get("detectedDateTime") or "", reverse=True)
+        sample = [
+            {
+                "detectedDateTime": entry.get("detectedDateTime"),
+                "riskLevel": entry.get("riskLevel"),
+                "riskType": entry.get("riskEventType"),
+                "userPrincipalName": entry.get("userPrincipalName"),
+            }
+            for entry in filtered[:25]
+        ]
         return {
-            "detectedInPast90Days": len(raw),
+            "detectedInPast90Days": len(filtered),
             "sample": sample,
         }
 

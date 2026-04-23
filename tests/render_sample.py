@@ -53,6 +53,8 @@ def render() -> Path:
         intune_available=bool(evidence["intune"].get("devices")),
         user_summary=main._user_summary(evidence["azure_ad"]),
         remediation=nist_800_171.generate_remediation_backlog(compliance),
+        collection_warnings=evidence.get("collection_warnings") or [],
+        policies=evidence.get("policies") or {},
     )
     output_dir = ROOT / "reports"
     output_dir.mkdir(exist_ok=True)

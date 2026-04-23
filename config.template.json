@@ -26,6 +26,11 @@
     },
     "exchange": {
       "enabled": true
+    },
+    "policies": {
+      "enabled": true,
+      "site_url": "",
+      "comment": "Paste the URL of your SharePoint policy document library (the Forms/AllItems.aspx page works). Examples: https://contoso.sharepoint.us/IT%20Policies/Forms/AllItems.aspx or https://contoso.sharepoint.us/sites/Compliance/Shared%20Documents/Forms/AllItems.aspx. Leave empty to skip."
     }
   },
   "schedule": {

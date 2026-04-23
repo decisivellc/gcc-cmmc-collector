@@ -39,30 +39,46 @@ CONTROL_IDS = [
     "AC-2",
     "AC-3",
     "AC-6",
-    "IA-2",
-    "IA-4",
-    "IA-5",
+    "AT-1",
+    "AU-1",
     "AU-2",
     "AU-3",
     "AU-6",
     "AU-12",
+    "CM-1",
+    "IA-1",
+    "IA-2",
+    "IA-4",
+    "IA-5",
+    "IR-1",
+    "IR-4",
+    "MA-1",
+    "MP-1",
+    "PE-1",
+    "PS-1",
+    "RA-1",
+    "SC-1",
     "SC-7",
+    "SI-1",
     "SI-2",
     "SI-3",
     "SI-4",
-    "IR-1",
-    "IR-4",
-    "AT-1",
 ]
 
 FAMILY_TITLES = {
     "AC": "Access Control",
-    "IA": "Identification and Authentication",
+    "AT": "Awareness and Training",
     "AU": "Audit and Accountability",
+    "CM": "Configuration Management",
+    "IA": "Identification and Authentication",
+    "IR": "Incident Response",
+    "MA": "Maintenance",
+    "MP": "Media Protection",
+    "PE": "Physical Protection",
+    "PS": "Personnel Security",
+    "RA": "Risk Assessment",
     "SC": "System and Communications Protection",
     "SI": "System and Information Integrity",
-    "IR": "Incident Response",
-    "AT": "Awareness and Training",
 }
 
 
@@ -92,6 +108,8 @@ def map(evidence: dict[str, Any]) -> dict[str, Any]:
     for control_id, fn in mappers.items():
         entry = fn(evidence)
         entry.setdefault("family", control_id.split("-")[0])
+        controls[control_id] = entry
+    for control_id, entry in _map_policy_only_controls(evidence).items():
         controls[control_id] = entry
     summary = _summarize(controls)
     return {"controls": controls, "summary": summary}
@@ -226,6 +244,7 @@ def _map_ac1(evidence: dict[str, Any]) -> dict[str, Any]:
                 "Write a 1-page access control policy.",
             ],
         )
+    _apply_policy_doc_evidence(entry, evidence, "AC-1")
     return entry
 
 
@@ -760,6 +779,7 @@ def _map_ir1(evidence: dict[str, Any]) -> dict[str, Any]:
             "Run one table-top exercise and document lessons learned.",
         ],
     )
+    _apply_policy_doc_evidence(entry, evidence, "IR-1")
     return entry
 
 
@@ -812,7 +832,105 @@ def _map_at1(evidence: dict[str, Any]) -> dict[str, Any]:
             "Require annual completion and retain certificates.",
         ],
     )
+    _apply_policy_doc_evidence(entry, evidence, "AT-1")
     return entry
+
+
+POLICY_ONLY_CONTROLS = {
+    "AU-1": ("AU", "Audit and Accountability Policy",
+             "Documented audit and accountability policy and procedures."),
+    "CM-1": ("CM", "Configuration Management Policy",
+             "Documented configuration management and change control policy."),
+    "IA-1": ("IA", "Identification and Authentication Policy",
+             "Documented identification and authentication policy."),
+    "MA-1": ("MA", "System Maintenance Policy",
+             "Documented system maintenance policy and procedures."),
+    "MP-1": ("MP", "Media Protection Policy",
+             "Documented media protection and removable-media handling policy."),
+    "PE-1": ("PE", "Physical Protection Policy",
+             "Documented physical and environmental protection policy."),
+    "PS-1": ("PS", "Personnel Security Policy",
+             "Documented personnel security policy covering screening and access."),
+    "RA-1": ("RA", "Risk Assessment Policy",
+             "Documented risk assessment and risk management policy."),
+    "SC-1": ("SC", "System and Communications Protection Policy",
+             "Documented system and communications protection policy."),
+    "SI-1": ("SI", "System and Information Integrity Policy",
+             "Documented system and information integrity policy."),
+}
+
+
+def _policy_docs_for(evidence: dict[str, Any], control_id: str) -> list[dict[str, Any]]:
+    matches = (evidence.get("policies") or {}).get("controlMatches") or {}
+    return matches.get(control_id) or []
+
+
+def _apply_policy_doc_evidence(
+    entry: dict[str, Any],
+    evidence: dict[str, Any],
+    control_id: str,
+) -> None:
+    docs = _policy_docs_for(evidence, control_id)
+    if not docs:
+        return
+    names = ", ".join(d.get("name") for d in docs if d.get("name"))
+    entry["evidence"].append(
+        _evidence(
+            "SharePoint policies library",
+            f"Matched policy document(s): {names}",
+        )
+    )
+    entry["gaps"] = [
+        g for g in entry["gaps"]
+        if "written" not in g.lower() and "policy document" not in g.lower()
+    ]
+    if entry["status"] != STATUS_COMPLIANT:
+        entry["status"] = STATUS_PARTIAL if entry["status"] == STATUS_NOT_ADDRESSED else entry["status"]
+    if entry["status"] == STATUS_PARTIAL and entry["gaps"] == []:
+        entry["status"] = STATUS_COMPLIANT
+        entry["maturity"] = MATURITY_AUTOMATED
+
+
+def _map_policy_only_controls(evidence: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    results: dict[str, dict[str, Any]] = {}
+    policies_block = evidence.get("policies") or {}
+    site_available = bool(policies_block.get("available"))
+    for control_id, (family, title, description) in POLICY_ONLY_CONTROLS.items():
+        entry = _base(title, family, description)
+        docs = _policy_docs_for(evidence, control_id)
+        if docs:
+            names = ", ".join(d.get("name") for d in docs if d.get("name"))
+            entry["evidence"].append(
+                _evidence(
+                    "SharePoint policies library",
+                    f"Matched policy document(s): {names}",
+                )
+            )
+            entry["status"] = STATUS_COMPLIANT
+            entry["maturity"] = MATURITY_AUTOMATED
+            entry["remediation"] = _remediation(
+                "0 hours",
+                BUCKET_QUICK,
+                ["Review document annually and re-publish updated version."],
+            )
+        else:
+            reason = (
+                "No matching policy document found in configured SharePoint library."
+                if site_available
+                else "Policies collector not configured or SharePoint library unreachable."
+            )
+            entry["gaps"].append(reason)
+            entry["remediation"] = _remediation(
+                "1 day",
+                BUCKET_MEDIUM,
+                [
+                    f"Draft a 1–2 page {title}.",
+                    "Publish to the SharePoint policies library used by this tool.",
+                    "Require annual review and executive sign-off.",
+                ],
+            )
+        results[control_id] = entry
+    return results
 
 
 def _version_tuple(version: str | None) -> tuple[int, ...] | None:

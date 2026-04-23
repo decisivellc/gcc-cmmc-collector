@@ -37,8 +37,19 @@ Under **API permissions > Add a permission > Microsoft Graph > Application permi
 | `DeviceManagementConfiguration.Read.All` | Read Intune compliance policies |
 | `SecurityEvents.Read.All` | Read Secure Score, Defender alerts |
 | `ThreatIndicators.Read.All` | Read Defender vulnerability data |
+| `Sites.Read.All` | Read SharePoint policy document library |
 
 All permissions must show **Status: Granted for `<tenant>`**. Missing consent is the most common cause of `403` errors.
+
+### Optional: policies collector
+
+If you enable the `policies` collector (on by default), set `collectors.policies.site_url` in `config.json` to the URL of your SharePoint document library holding NIST 800-171 policy docs. The URL from the SharePoint browser address bar works, e.g.:
+
+```
+https://contoso.sharepoint.us/IT%20Policies/Forms/AllItems.aspx
+```
+
+The collector matches filenames against keywords for each `-1` control (e.g. "Access Control Policy.pdf" → AC-1). Leave `site_url` blank to skip; unmatched controls then show as `NOT_ADDRESSED` with a "library not configured" note.
 
 ## 4. Fill in `config.json`
 

@@ -12,7 +12,9 @@
           "lastNonInteractiveSignInDateTime": "2099-04-20T10:00:00Z"
         },
         "mfaStatus": "enabled",
-        "assignedRoles": ["Global Administrator"],
+        "assignedRoles": [
+          "Global Administrator"
+        ],
         "lastActiveInDays": 0
       },
       {
@@ -69,14 +71,32 @@
       {
         "displayName": "Require MFA for all users",
         "state": "enabled",
-        "grantControls": ["mfa"],
-        "conditions": {"applications": ["All"], "users": ["All"]}
+        "grantControls": [
+          "mfa"
+        ],
+        "conditions": {
+          "applications": [
+            "All"
+          ],
+          "users": [
+            "All"
+          ]
+        }
       },
       {
         "displayName": "Block legacy authentication",
         "state": "enabled",
-        "grantControls": ["block"],
-        "conditions": {"applications": ["All"], "users": ["All"]}
+        "grantControls": [
+          "block"
+        ],
+        "conditions": {
+          "applications": [
+            "All"
+          ],
+          "users": [
+            "All"
+          ]
+        }
       }
     ],
     "auditLogs": {
@@ -87,7 +107,9 @@
           "activityDisplayName": "Update user",
           "result": "success",
           "initiatedBy": "admin@contoso.onmicrosoft.us",
-          "targetResources": ["User"]
+          "targetResources": [
+            "User"
+          ]
         }
       ],
       "logsAvailable": true,
@@ -110,7 +132,10 @@
         "lastSyncDateTime": "2099-04-20T00:00:00Z",
         "complianceState": "compliant",
         "managementState": "managed",
-        "encryption": {"encryptionStatus": "encrypted", "encryptionReadiness": "ready"},
+        "encryption": {
+          "encryptionStatus": "encrypted",
+          "encryptionReadiness": "ready"
+        },
         "lastSyncDaysAgo": 0,
         "complianceDetails": {
           "osVersion": "14.4.1",
@@ -130,7 +155,10 @@
         "lastSyncDateTime": "2099-04-19T00:00:00Z",
         "complianceState": "compliant",
         "managementState": "managed",
-        "encryption": {"encryptionStatus": "encrypted", "encryptionReadiness": "ready"},
+        "encryption": {
+          "encryptionStatus": "encrypted",
+          "encryptionReadiness": "ready"
+        },
         "lastSyncDaysAgo": 1,
         "complianceDetails": {
           "osVersion": "14.4.1",
@@ -150,7 +178,10 @@
         "lastSyncDateTime": "2099-04-10T00:00:00Z",
         "complianceState": "noncompliant",
         "managementState": "managed",
-        "encryption": {"encryptionStatus": "encrypted", "encryptionReadiness": "ready"},
+        "encryption": {
+          "encryptionStatus": "encrypted",
+          "encryptionReadiness": "ready"
+        },
         "lastSyncDaysAgo": 10,
         "complianceDetails": {
           "osVersion": "13.6.0",
@@ -180,10 +211,27 @@
   "defender": {
     "vulnerabilities": {
       "byDevice": {
-        "MacBook-ALICE-001": {"critical": 0, "high": 0, "medium": 2, "low": 4, "total": 6},
-        "MacBook-BOB-002": {"critical": 0, "high": 1, "medium": 3, "low": 5, "total": 9}
+        "MacBook-ALICE-001": {
+          "critical": 0,
+          "high": 0,
+          "medium": 2,
+          "low": 4,
+          "total": 6
+        },
+        "MacBook-BOB-002": {
+          "critical": 0,
+          "high": 1,
+          "medium": 3,
+          "low": 5,
+          "total": 9
+        }
       },
-      "summary": {"totalCritical": 0, "totalHigh": 1, "totalMedium": 5, "totalLow": 9}
+      "summary": {
+        "totalCritical": 0,
+        "totalHigh": 1,
+        "totalMedium": 5,
+        "totalLow": 9
+      }
     },
     "threatDetections": {
       "activeThreats": 0,
@@ -220,13 +268,22 @@
         "auditEnabled": true,
         "auditLog": {
           "recordCount": null,
-          "dateRange": {"oldest": null, "newest": null},
+          "dateRange": {
+            "oldest": null,
+            "newest": null
+          },
           "note": "Exchange mailbox audit detail requires the Security & Compliance PowerShell module."
         }
       }
     ],
     "dlpPolicies": [
-      {"id": "dlp-1", "name": "PII Protection", "enabled": true, "mode": "Enforce", "rules": 3}
+      {
+        "id": "dlp-1",
+        "name": "PII Protection",
+        "enabled": true,
+        "mode": "Enforce",
+        "rules": 3
+      }
     ],
     "dlpRuleMatches": {
       "past90Days": 0,
@@ -245,6 +302,143 @@
           "resultStatus": "success"
         }
       ]
+    }
+  },
+  "policies": {
+    "available": true,
+    "site": {
+      "url": "https://contoso.sharepoint.us/IT%20Policies/Forms/AllItems.aspx",
+      "id": "contoso.sharepoint.us,SITE-GUID,WEB-GUID",
+      "hostname": "contoso.sharepoint.us",
+      "sitePath": "",
+      "libraryName": "IT Policies",
+      "driveId": "b!drive-id"
+    },
+    "documents": [
+      {
+        "name": "Access Control Policy.pdf",
+        "webUrl": "https://example",
+        "size": 102400,
+        "lastModifiedDateTime": "2025-06-01T00:00:00Z"
+      },
+      {
+        "name": "Incident Response Plan.docx",
+        "webUrl": "https://example",
+        "size": 51200,
+        "lastModifiedDateTime": "2025-06-01T00:00:00Z"
+      },
+      {
+        "name": "Security Awareness Training Policy.pdf",
+        "webUrl": "https://example",
+        "size": 80000,
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+      },
+      {
+        "name": "Audit and Accountability Policy.pdf",
+        "webUrl": "https://example",
+        "size": 40000,
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+      },
+      {
+        "name": "Configuration Management Policy.pdf",
+        "webUrl": "https://example",
+        "size": 40000,
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+      },
+      {
+        "name": "System and Information Integrity Policy.pdf",
+        "webUrl": "https://example",
+        "size": 40000,
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+      },
+      {
+        "name": "Media Protection Policy.pdf",
+        "webUrl": "https://example",
+        "size": 40000,
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+      },
+      {
+        "name": "Vendor Onboarding Checklist.docx",
+        "webUrl": "https://example",
+        "size": 20000,
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+      }
+    ],
+    "controlMatches": {
+      "AC-1": [
+        {
+          "name": "Access Control Policy.pdf",
+          "webUrl": "https://example",
+          "size": 102400,
+          "lastModifiedDateTime": "2025-06-01T00:00:00Z"
+        }
+      ],
+      "AT-1": [
+        {
+          "name": "Security Awareness Training Policy.pdf",
+          "webUrl": "https://example",
+          "size": 80000,
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        }
+      ],
+      "AU-1": [
+        {
+          "name": "Audit and Accountability Policy.pdf",
+          "webUrl": "https://example",
+          "size": 40000,
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        }
+      ],
+      "CM-1": [
+        {
+          "name": "Configuration Management Policy.pdf",
+          "webUrl": "https://example",
+          "size": 40000,
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        }
+      ],
+      "IA-1": [],
+      "IR-1": [
+        {
+          "name": "Incident Response Plan.docx",
+          "webUrl": "https://example",
+          "size": 51200,
+          "lastModifiedDateTime": "2025-06-01T00:00:00Z"
+        }
+      ],
+      "MA-1": [],
+      "MP-1": [
+        {
+          "name": "Media Protection Policy.pdf",
+          "webUrl": "https://example",
+          "size": 40000,
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        }
+      ],
+      "PE-1": [],
+      "PS-1": [],
+      "RA-1": [],
+      "SC-1": [],
+      "SI-1": [
+        {
+          "name": "System and Information Integrity Policy.pdf",
+          "webUrl": "https://example",
+          "size": 40000,
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        }
+      ]
+    },
+    "unmatched": [
+      {
+        "name": "Vendor Onboarding Checklist.docx",
+        "webUrl": "https://example",
+        "size": 20000,
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+      }
+    ],
+    "coverage": {
+      "controlsCovered": 7,
+      "controlsTotal": 13
     }
   }
 }

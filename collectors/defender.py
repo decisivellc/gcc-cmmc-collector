@@ -1,15 +1,14 @@
 """Microsoft Defender for Endpoint evidence collector.
 
-Many Defender endpoints are not exposed through the GCC-High Graph surface
-for every tenant/license level. This collector is structured to gracefully
-degrade: if `/security/vulnerabilities` or `/security/alerts` fails we fall
-back to Intune signals for antivirus health.
+Graph v1.0 on GCC-High does not expose Defender vulnerability data; that
+lives in the Defender for Endpoint API (api-gcc.securitycenter.microsoft.us).
+This collector uses `/security/alerts` and `/security/secureScores` from
+Graph, then falls back to Intune `managedDevices` for antivirus health.
 """
 
 from __future__ import annotations
 
 import logging
-from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -19,15 +18,25 @@ from graph_client import GraphClient
 logger = logging.getLogger(__name__)
 
 
-SEVERITY_BUCKETS = ("critical", "high", "medium", "low")
-
-
 class DefenderCollector(BaseCollector):
     name = "defender"
 
     def collect(self) -> dict[str, Any]:
-        vulns_raw = self._safe_get_all("/security/vulnerabilities")
-        vulnerabilities = _bucket_vulnerabilities(vulns_raw)
+        vulnerabilities = {
+            "byDevice": {},
+            "summary": {
+                "totalCritical": 0,
+                "totalHigh": 0,
+                "totalMedium": 0,
+                "totalLow": 0,
+            },
+            "available": False,
+            "note": (
+                "Device vulnerabilities are not exposed through Graph v1.0. "
+                "Integrate the Defender for Endpoint API "
+                "(api-gcc.securitycenter.microsoft.us) to populate this section."
+            ),
+        }
 
         ninety_days_ago = (
             datetime.now(timezone.utc) - timedelta(days=90)
@@ -109,36 +118,6 @@ def collect(client: GraphClient) -> dict[str, Any]:
     if collector.warnings:
         result["_collectionWarnings"] = collector.warnings
     return result
-
-
-def _bucket_vulnerabilities(vulns: list[dict[str, Any]]) -> dict[str, Any]:
-    by_device: dict[str, dict[str, int]] = defaultdict(
-        lambda: {bucket: 0 for bucket in SEVERITY_BUCKETS} | {"total": 0}
-    )
-    totals = {f"total{bucket.capitalize()}": 0 for bucket in SEVERITY_BUCKETS}
-    for entry in vulns:
-        severity = (entry.get("severity") or "").lower()
-        if severity not in SEVERITY_BUCKETS:
-            continue
-        targets = entry.get("affectedDevices") or entry.get("impactedAssets") or []
-        if not targets:
-            totals[f"total{severity.capitalize()}"] += 1
-            continue
-        for target in targets:
-            name = (
-                target.get("deviceName")
-                if isinstance(target, dict)
-                else str(target)
-            )
-            if not name:
-                continue
-            by_device[name][severity] += 1
-            by_device[name]["total"] += 1
-            totals[f"total{severity.capitalize()}"] += 1
-    return {
-        "byDevice": dict(by_device),
-        "summary": totals,
-    }
 
 
 def _summarize_threats(alerts: list[dict[str, Any]]) -> dict[str, Any]:

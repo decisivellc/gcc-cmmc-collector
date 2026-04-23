@@ -14,7 +14,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from collectors import azure_ad, defender, exchange, intune
+from collectors import azure_ad, defender, exchange, intune, policies
 from graph_client import GraphClient
 from mappers import nist_800_171
 
@@ -28,6 +28,7 @@ COLLECTOR_FUNCTIONS = {
     "intune": intune.collect,
     "defender": defender.collect,
     "exchange": exchange.collect,
+    "policies": policies.collect,
 }
 
 PLACEHOLDER_VALUES = {
@@ -85,13 +86,24 @@ def _enabled_collectors(config: dict[str, Any]) -> list[str]:
     return enabled
 
 
-def run_collection(client: GraphClient, enabled: list[str]) -> dict[str, Any]:
+def run_collection(
+    client: GraphClient,
+    enabled: list[str],
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    config = config or {}
+    collector_settings = config.get("collectors") or {}
     results: dict[str, Any] = {}
     with ThreadPoolExecutor(max_workers=max(len(enabled), 1)) as executor:
-        futures = {
-            executor.submit(COLLECTOR_FUNCTIONS[name], client): name
-            for name in enabled
-        }
+        futures = {}
+        for name in enabled:
+            fn = COLLECTOR_FUNCTIONS[name]
+            settings = collector_settings.get(name) or {}
+            if name == "policies":
+                call = lambda c=client, s=settings: fn(c, s.get("site_url", ""))
+            else:
+                call = lambda c=client, f=fn: f(c)
+            futures[executor.submit(call)] = name
         for future in as_completed(futures):
             name = futures[future]
             try:
@@ -127,6 +139,7 @@ def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any])
         user_summary=_user_summary(azure_data),
         remediation=remediation,
         collection_warnings=evidence.get("collection_warnings") or [],
+        policies=evidence.get("policies") or {},
     )
 
 
@@ -242,7 +255,7 @@ def main(argv: list[str] | None = None) -> int:
 
     enabled = _enabled_collectors(config)
     logger.info("Running collectors in parallel: %s", ", ".join(enabled))
-    collected = run_collection(client, enabled)
+    collected = run_collection(client, enabled, config)
 
     evidence = {
         "collected_at": datetime.now(timezone.utc).isoformat(),

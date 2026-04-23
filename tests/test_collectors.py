@@ -137,18 +137,8 @@ def test_intune_handles_missing_devices():
 # ----- Defender --------------------------------------------------------
 
 
-def test_defender_buckets_vulnerabilities_and_scores():
+def test_defender_collects_alerts_score_and_antivirus():
     paginated = {
-        "/security/vulnerabilities": [
-            {
-                "severity": "high",
-                "affectedDevices": [{"deviceName": "MacBook"}],
-            },
-            {
-                "severity": "medium",
-                "affectedDevices": [{"deviceName": "MacBook"}],
-            },
-        ],
         "/security/alerts": [{"id": "a1", "status": "newAlert", "severity": "high"}],
         "/deviceManagement/managedDevices": [
             {"id": "dev-1", "windowsProtectionState": {"realTimeProtectionEnabled": True}}
@@ -157,8 +147,8 @@ def test_defender_buckets_vulnerabilities_and_scores():
     routes = {"/security/secureScores": {"value": [{"currentScore": 600, "maxScore": 800}]}}
     client = FakeClient(routes=routes, paginated_routes=paginated)
     evidence = defender.collect(client)
-    assert evidence["vulnerabilities"]["summary"]["totalHigh"] == 1
-    assert evidence["vulnerabilities"]["summary"]["totalMedium"] == 1
+    assert evidence["vulnerabilities"]["available"] is False
+    assert "Defender for Endpoint API" in evidence["vulnerabilities"]["note"]
     assert evidence["threatDetections"]["activeThreats"] == 1
     assert evidence["secureScore"]["currentScore"] == 600
     assert evidence["antivirusStatus"]["agentHealthy"] == 1
@@ -167,7 +157,7 @@ def test_defender_buckets_vulnerabilities_and_scores():
 def test_defender_gracefully_degrades():
     client = FakeClient(
         routes={"/security/secureScores": Exception("no access")},
-        paginated_routes={"/security/vulnerabilities": Exception("no access")},
+        paginated_routes={},
     )
     evidence = defender.collect(client)
     assert evidence["vulnerabilities"]["summary"]["totalHigh"] == 0
@@ -196,9 +186,9 @@ def test_exchange_uses_graph_audit_when_available():
                 "result": "success",
             }
         ],
-        "/admin/exchange/dataPolicies": [{"id": "d1", "name": "PII", "enabled": True, "mode": "Enforce"}],
     }
     client = FakeClient(routes={}, paginated_routes=paginated)
     evidence = exchange.collect(client)
     assert evidence["exchangeAuditLog"]["logsAvailable"] is True
-    assert evidence["dlpPolicies"][0]["enabled"] is True
+    assert evidence["dlpPolicies"]["available"] is False
+    assert "Security & Compliance PowerShell" in evidence["dlpPolicies"]["note"]

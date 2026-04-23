@@ -205,6 +205,49 @@
   {% endif %}
 </section>
 
+{% if policies %}
+<section id="policies">
+  <h2>Policy Documentation
+    {% if policies.available %}
+      ({{ policies.coverage.controlsCovered }} of {{ policies.coverage.controlsTotal }} policy controls covered)
+    {% endif %}
+  </h2>
+  {% if not policies.available %}
+    <p>{{ policies.reason }}</p>
+  {% else %}
+    <p>Library: <code>{{ policies.site.libraryName }}</code> in <code>{{ policies.site.hostname }}{{ policies.site.sitePath or '/' }}</code> &middot; {{ policies.documents|length }} documents scanned.</p>
+    <table>
+      <thead><tr><th>Control</th><th>Matched Document(s)</th></tr></thead>
+      <tbody>
+        {% for cid, docs in policies.controlMatches.items() %}
+        <tr>
+          <td><code>{{ cid }}</code></td>
+          <td>
+            {% if docs %}
+              {% for doc in docs %}
+                <a href="{{ doc.webUrl }}">{{ doc.name }}</a>{% if not loop.last %}, {% endif %}
+              {% endfor %}
+            {% else %}
+              <span style="color: var(--red);">No match</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if policies.unmatched %}
+    <h3>Unmatched documents in library</h3>
+    <p style="color: var(--muted); font-size: 13px;">These documents are in the library but did not match any policy control keyword:</p>
+    <ul>
+      {% for doc in policies.unmatched %}
+      <li><a href="{{ doc.webUrl }}">{{ doc.name }}</a></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  {% endif %}
+</section>
+{% endif %}
+
 <section id="controls">
   <h2>Control Status by Family</h2>
   {% for family in control_families %}

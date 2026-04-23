@@ -133,17 +133,18 @@
 </header>
 <main>
 
+
 <section id="summary">
   <h2>Overall Readiness</h2>
   <div class="progress">
-    <span class="pct">69% Ready</span>
-    <div class="bar"><span style="width: 69%"></span></div>
+    <span class="pct">66% Ready</span>
+    <div class="bar"><span style="width: 66%"></span></div>
   </div>
   <div class="summary-grid">
-    <div class="stat"><span class="number" style="color: var(--green)">9</span><span class="label">Compliant</span></div>
+    <div class="stat"><span class="number" style="color: var(--green)">15</span><span class="label">Compliant</span></div>
     <div class="stat"><span class="number" style="color: var(--orange)">7</span><span class="label">Partial</span></div>
-    <div class="stat"><span class="number" style="color: var(--red)">2</span><span class="label">Not Addressed</span></div>
-    <div class="stat"><span class="number">11</span><span class="label">Automated Maturity</span></div>
+    <div class="stat"><span class="number" style="color: var(--red)">6</span><span class="label">Not Addressed</span></div>
+    <div class="stat"><span class="number">17</span><span class="label">Automated Maturity</span></div>
   </div>
 </section>
 
@@ -184,21 +185,106 @@
   </table>
 </section>
 
+<section id="policies">
+  <h2>Policy Documentation
+      (7 of 13 policy controls covered)
+  </h2>
+    <p>Library: <code>IT Policies</code> in <code>contoso.sharepoint.us/</code> &middot; 8 documents scanned.</p>
+    <table>
+      <thead><tr><th>Control</th><th>Matched Document(s)</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>AC-1</code></td>
+          <td>
+                <a href="https://example">Access Control Policy.pdf</a>          </td>
+        </tr>
+        <tr>
+          <td><code>AT-1</code></td>
+          <td>
+                <a href="https://example">Security Awareness Training Policy.pdf</a>          </td>
+        </tr>
+        <tr>
+          <td><code>AU-1</code></td>
+          <td>
+                <a href="https://example">Audit and Accountability Policy.pdf</a>          </td>
+        </tr>
+        <tr>
+          <td><code>CM-1</code></td>
+          <td>
+                <a href="https://example">Configuration Management Policy.pdf</a>          </td>
+        </tr>
+        <tr>
+          <td><code>IA-1</code></td>
+          <td>
+              <span style="color: var(--red);">No match</span>
+          </td>
+        </tr>
+        <tr>
+          <td><code>IR-1</code></td>
+          <td>
+                <a href="https://example">Incident Response Plan.docx</a>          </td>
+        </tr>
+        <tr>
+          <td><code>MA-1</code></td>
+          <td>
+              <span style="color: var(--red);">No match</span>
+          </td>
+        </tr>
+        <tr>
+          <td><code>MP-1</code></td>
+          <td>
+                <a href="https://example">Media Protection Policy.pdf</a>          </td>
+        </tr>
+        <tr>
+          <td><code>PE-1</code></td>
+          <td>
+              <span style="color: var(--red);">No match</span>
+          </td>
+        </tr>
+        <tr>
+          <td><code>PS-1</code></td>
+          <td>
+              <span style="color: var(--red);">No match</span>
+          </td>
+        </tr>
+        <tr>
+          <td><code>RA-1</code></td>
+          <td>
+              <span style="color: var(--red);">No match</span>
+          </td>
+        </tr>
+        <tr>
+          <td><code>SC-1</code></td>
+          <td>
+              <span style="color: var(--red);">No match</span>
+          </td>
+        </tr>
+        <tr>
+          <td><code>SI-1</code></td>
+          <td>
+                <a href="https://example">System and Information Integrity Policy.pdf</a>          </td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Unmatched documents in library</h3>
+    <p style="color: var(--muted); font-size: 13px;">These documents are in the library but did not match any policy control keyword:</p>
+    <ul>
+      <li><a href="https://example">Vendor Onboarding Checklist.docx</a></li>
+    </ul>
+</section>
+
 <section id="controls">
   <h2>Control Status by Family</h2>
   <div class="family-card">
     <h3>AC &mdash; Access Control</h3>
     <div class="control-card">
-      <h4>AC-1: Access Control Policy and Procedures <span class="badge badge-PARTIAL">PARTIAL</span></h4>
-      <div class="meta">Maturity: Manual Verification Needed</div>
+      <h4>AC-1: Access Control Policy and Procedures <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
       <div class="evidence"><strong>Evidence:</strong>
         <ul>
           <li>1 enabled MFA conditional-access policies found <em>(Azure AD conditional access)</em></li>
+          <li>Matched policy document(s): Access Control Policy.pdf <em>(SharePoint policies library)</em></li>
         </ul>
-      </div>
-      <div class="gaps"><strong>Gaps:</strong>
-        <ul>
-<li>Written access control policy document not verified by this tool.</li>        </ul>
       </div>
       <div class="remediation"><strong>Remediation (1 hour):</strong>
         <ol>
@@ -282,6 +368,18 @@
         </ul>
       </div>
     </div>
+    <div class="control-card">
+      <h4>IA-1: Identification and Authentication Policy <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
+      <div class="meta">Maturity: Not Addressed</div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>No matching policy document found in configured SharePoint library.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 day):</strong>
+        <ol>
+<li>Draft a 1–2 page Identification and Authentication Policy.</li><li>Publish to the SharePoint policies library used by this tool.</li><li>Require annual review and executive sign-off.</li>        </ol>
+      </div>
+    </div>
   </div>
   <div class="family-card">
     <h3>AU &mdash; Audit and Accountability</h3>
@@ -330,6 +428,19 @@
         </ul>
       </div>
     </div>
+    <div class="control-card">
+      <h4>AU-1: Audit and Accountability Policy <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Matched policy document(s): Audit and Accountability Policy.pdf <em>(SharePoint policies library)</em></li>
+        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (0 hours):</strong>
+        <ol>
+<li>Review document annually and re-publish updated version.</li>        </ol>
+      </div>
+    </div>
   </div>
   <div class="family-card">
     <h3>SC &mdash; System and Communications Protection</h3>
@@ -348,6 +459,18 @@
       <div class="remediation"><strong>Remediation (1 day):</strong>
         <ol>
 <li>Create conditional-access policy blocking legacy authentication.</li><li>Require compliant device for CUI-containing applications.</li>        </ol>
+      </div>
+    </div>
+    <div class="control-card">
+      <h4>SC-1: System and Communications Protection Policy <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
+      <div class="meta">Maturity: Not Addressed</div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>No matching policy document found in configured SharePoint library.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 day):</strong>
+        <ol>
+<li>Draft a 1–2 page System and Communications Protection Policy.</li><li>Publish to the SharePoint policies library used by this tool.</li><li>Require annual review and executive sign-off.</li>        </ol>
       </div>
     </div>
   </div>
@@ -390,15 +513,29 @@
         </ul>
       </div>
     </div>
+    <div class="control-card">
+      <h4>SI-1: System and Information Integrity Policy <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Matched policy document(s): System and Information Integrity Policy.pdf <em>(SharePoint policies library)</em></li>
+        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (0 hours):</strong>
+        <ol>
+<li>Review document annually and re-publish updated version.</li>        </ol>
+      </div>
+    </div>
   </div>
   <div class="family-card">
     <h3>IR &mdash; Incident Response</h3>
     <div class="control-card">
-      <h4>IR-1: Incident Response Policy <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
-      <div class="meta">Maturity: Not Addressed</div>
-      <div class="gaps"><strong>Gaps:</strong>
+      <h4>IR-1: Incident Response Policy <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
         <ul>
-<li>No automated evidence: requires a written incident response plan.</li>        </ul>
+          <li>Matched policy document(s): Incident Response Plan.docx <em>(SharePoint policies library)</em></li>
+        </ul>
       </div>
       <div class="remediation"><strong>Remediation (2 days):</strong>
         <ol>
@@ -426,8 +563,13 @@
   <div class="family-card">
     <h3>AT &mdash; Awareness and Training</h3>
     <div class="control-card">
-      <h4>AT-1: Security Awareness Training <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
+      <h4>AT-1: Security Awareness Training <span class="badge badge-PARTIAL">PARTIAL</span></h4>
       <div class="meta">Maturity: Not Addressed</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Matched policy document(s): Security Awareness Training Policy.pdf <em>(SharePoint policies library)</em></li>
+        </ul>
+      </div>
       <div class="gaps"><strong>Gaps:</strong>
         <ul>
 <li>No automated signal: track completion in an LMS or Attack Simulation Training.</li>        </ul>
@@ -438,6 +580,98 @@
       </div>
     </div>
   </div>
+  <div class="family-card">
+    <h3>CM &mdash; CM</h3>
+    <div class="control-card">
+      <h4>CM-1: Configuration Management Policy <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Matched policy document(s): Configuration Management Policy.pdf <em>(SharePoint policies library)</em></li>
+        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (0 hours):</strong>
+        <ol>
+<li>Review document annually and re-publish updated version.</li>        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>MA &mdash; MA</h3>
+    <div class="control-card">
+      <h4>MA-1: System Maintenance Policy <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
+      <div class="meta">Maturity: Not Addressed</div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>No matching policy document found in configured SharePoint library.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 day):</strong>
+        <ol>
+<li>Draft a 1–2 page System Maintenance Policy.</li><li>Publish to the SharePoint policies library used by this tool.</li><li>Require annual review and executive sign-off.</li>        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>MP &mdash; MP</h3>
+    <div class="control-card">
+      <h4>MP-1: Media Protection Policy <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <div class="meta">Maturity: Automated</div>
+      <div class="evidence"><strong>Evidence:</strong>
+        <ul>
+          <li>Matched policy document(s): Media Protection Policy.pdf <em>(SharePoint policies library)</em></li>
+        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (0 hours):</strong>
+        <ol>
+<li>Review document annually and re-publish updated version.</li>        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>PE &mdash; PE</h3>
+    <div class="control-card">
+      <h4>PE-1: Physical Protection Policy <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
+      <div class="meta">Maturity: Not Addressed</div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>No matching policy document found in configured SharePoint library.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 day):</strong>
+        <ol>
+<li>Draft a 1–2 page Physical Protection Policy.</li><li>Publish to the SharePoint policies library used by this tool.</li><li>Require annual review and executive sign-off.</li>        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>PS &mdash; PS</h3>
+    <div class="control-card">
+      <h4>PS-1: Personnel Security Policy <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
+      <div class="meta">Maturity: Not Addressed</div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>No matching policy document found in configured SharePoint library.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 day):</strong>
+        <ol>
+<li>Draft a 1–2 page Personnel Security Policy.</li><li>Publish to the SharePoint policies library used by this tool.</li><li>Require annual review and executive sign-off.</li>        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="family-card">
+    <h3>RA &mdash; RA</h3>
+    <div class="control-card">
+      <h4>RA-1: Risk Assessment Policy <span class="badge badge-NOT_ADDRESSED">NOT ADDRESSED</span></h4>
+      <div class="meta">Maturity: Not Addressed</div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>No matching policy document found in configured SharePoint library.</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (1 day):</strong>
+        <ol>
+<li>Draft a 1–2 page Risk Assessment Policy.</li><li>Publish to the SharePoint policies library used by this tool.</li><li>Require annual review and executive sign-off.</li>        </ol>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section id="backlog">
@@ -445,7 +679,6 @@
   <div class="backlog-group">
     <h3>Quick Wins <span>(&lt; 1 day each)</span></h3>
     <ul>
-      <li><strong>AC-1</strong>: Written access control policy document not verified by this tool. <em>(1 hour)</em></li>
       <li><strong>AC-2</strong>: 1 user accounts inactive for &gt;30 days.; 1 active users without registered MFA. <em>(1-2 hours)</em></li>
       <li><strong>IA-2</strong>: 1 active users without MFA registration. <em>(1 hour)</em></li>
     </ul>
@@ -457,12 +690,17 @@
       <li><strong>SC-7</strong>: Network-level boundary enforcement must be verified manually. <em>(1 day)</em></li>
       <li><strong>SI-2</strong>: 1 devices below macOS 14.3.; 1 non-compliant devices. <em>(1 day)</em></li>
       <li><strong>AT-1</strong>: No automated signal: track completion in an LMS or Attack Simulation Training. <em>(2 days)</em></li>
+      <li><strong>IA-1</strong>: No matching policy document found in configured SharePoint library. <em>(1 day)</em></li>
+      <li><strong>MA-1</strong>: No matching policy document found in configured SharePoint library. <em>(1 day)</em></li>
+      <li><strong>PE-1</strong>: No matching policy document found in configured SharePoint library. <em>(1 day)</em></li>
+      <li><strong>PS-1</strong>: No matching policy document found in configured SharePoint library. <em>(1 day)</em></li>
+      <li><strong>RA-1</strong>: No matching policy document found in configured SharePoint library. <em>(1 day)</em></li>
+      <li><strong>SC-1</strong>: No matching policy document found in configured SharePoint library. <em>(1 day)</em></li>
     </ul>
   </div>
   <div class="backlog-group">
     <h3>Heavy Lift <span>(&gt; 1 week each)</span></h3>
     <ul>
-      <li><strong>IR-1</strong>: No automated evidence: requires a written incident response plan. <em>(2 days)</em></li>
       <li><strong>IR-4</strong>: Incident-handling runbooks must be documented and tabletop-tested. <em>(3 days)</em></li>
     </ul>
   </div>

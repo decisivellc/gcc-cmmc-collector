@@ -62,20 +62,16 @@ class ExchangeCollector(BaseCollector):
             )
         return mailboxes
 
-    def _collect_dlp_policies(self) -> list[dict[str, Any]]:
-        raw = self._safe_get_all("/admin/exchange/dataPolicies")
-        policies: list[dict[str, Any]] = []
-        for entry in raw:
-            policies.append(
-                {
-                    "id": entry.get("id"),
-                    "name": entry.get("name") or entry.get("displayName"),
-                    "enabled": bool(entry.get("enabled", True)),
-                    "mode": entry.get("mode", "Audit"),
-                    "rules": len(entry.get("rules", []) or []),
-                }
-            )
-        return policies
+    def _collect_dlp_policies(self) -> dict[str, Any]:
+        return {
+            "available": False,
+            "policies": [],
+            "note": (
+                "Exchange DLP policies are not exposed through the Graph API. "
+                "Run Get-DlpCompliancePolicy via Security & Compliance PowerShell "
+                "to collect this signal."
+            ),
+        }
 
     def _collect_dlp_matches(self) -> dict[str, Any]:
         return {
