@@ -4,6 +4,8 @@ Open-source pre-assessment readiness tool for small Defense Industrial Base (DIB
 
 Built for the common small-DIB shape: 3-10 users, mixed endpoints (macOS / Windows / iOS / Android) managed by Intune, Defender for Endpoint, a single GCC-High tenant.
 
+![CMMC Level 2 readiness dashboard — critical findings, overall readiness with NIST family heatmap, and top gaps](docs/images/dashboard.png)
+
 ## What it does
 
 1. Authenticates to the GCC-High Graph API (`graph.microsoft.us`) as an app-only principal.
@@ -23,46 +25,53 @@ See [`reports/sample-report.html`](reports/sample-report.html) for a preview (re
 
 ## Quick start
 
-Two ways to run: a CLI (`main.py`) or a Flask web UI shipped as a Docker image.
-
-### CLI
+The fastest path is the published Docker image — no clone, no Python, just one command:
 
 ```bash
-git clone https://github.com/decisivellc/gcc-cmmc-collector.git
-cd gcc-cmmc-collector
-
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+mkdir cmmc-readiness && cd cmmc-readiness
+docker run --rm -p 8080:8080 \
+  -v "$(pwd)/data:/app/data" \
+  ghcr.io/decisivellc/gcc-cmmc-collector:latest
 ```
 
-**Entra app registration** — one-time setup for a new tenant. Two options:
+Visit <http://localhost:8080>, sign in with your GCC-High app-registration credentials (or first run `bootstrap` — see below), and click **Run collection**.
 
-- **Automated** (recommended): launches a device-code login, creates the Entra app, grants all 10 required permissions, and writes tenant/client IDs to `config.json`. You'll be prompted to sign in as a Global Administrator.
+The client secret is held only in the server process's memory for the duration of your session — it is never written to `config.json` or any disk file, and wipes on logout or container restart. Config, reports, evidence, and run history persist to `./data/` via the volume mount.
+
+### Entra app registration
+
+One-time setup per tenant. Two options:
+
+- **Automated** (recommended): launches a device-code login, creates the Entra app, grants all 10 required permissions, mints a client secret, and writes tenant/client IDs to `config.json`. Sign in as a Global Administrator (PIM-activated is fine).
 
     ```bash
-    python main.py bootstrap --tenant decisivellc.onmicrosoft.us
+    docker run --rm -it -v "$(pwd)/data:/app/data" \
+      ghcr.io/decisivellc/gcc-cmmc-collector:latest \
+      python main.py bootstrap --tenant your-tenant.onmicrosoft.us
     # Copy the printed client secret — it won't be shown again.
-    export CMMC_CLIENT_SECRET='<paste>'
     ```
 
 - **Manual**: follow the 20-minute walkthrough in [`SETUP.md`](SETUP.md) to create the app registration, mint a secret, and grant each permission by hand.
 
-**Run**:
+### Run from source
+
+For contributors or air-gapped installs:
 
 ```bash
+git clone https://github.com/decisivellc/gcc-cmmc-collector.git
+cd gcc-cmmc-collector
+git checkout v0.1.0   # or 'main' for unreleased
+
+# CLI
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python main.py bootstrap --tenant your-tenant.onmicrosoft.us  # if needed
+export CMMC_CLIENT_SECRET='<paste>'
 python main.py --config config.json --output ./reports
-open reports/compliance-report.html
-```
 
-### Web UI (Docker)
-
-```bash
+# Or web UI built from local source
 docker compose up --build
-open http://localhost:8080
 ```
-
-On first load, sign in with your GCC-High app-registration credentials. The client secret is held only in the server process's memory for the duration of your session — it is never written to `config.json` or any disk file, and wipes on logout or container restart. Config, reports, and evidence persist to `./data/` via a volume mount.
 
 #### Dev mode (live reload)
 
