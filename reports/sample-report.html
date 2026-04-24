@@ -252,16 +252,16 @@
 
   <div class="readiness-headline">
     <div class="readiness-score">
-      <span class="big-pct">15 / 28</span>
+      <span class="big-pct">14 / 28</span>
       <span class="score-label">controls assessment-ready</span>
     </div>
     <div class="readiness-narrative">
-      <strong>66%</strong> weighted readiness
-      (15 compliant, 7 partial, 6 not addressed).
-        <strong>2 quick wins</strong>
+      <strong>64%</strong> weighted readiness
+      (14 compliant, 8 partial, 6 not addressed).
+        <strong>3 quick wins</strong>
         available — each estimated at a few hours or less. Closing all of them would move you to
         <strong>61%</strong>.
-      <div class="readiness-bar"><span style="width: 66%"></span></div>
+      <div class="readiness-bar"><span style="width: 64%"></span></div>
     </div>
   </div>
 
@@ -350,6 +350,16 @@
           <td class="fam-pct">75%</td>
         </tr>
         <tr>
+          <td class="fam-title" title="Audit and Accountability">AU — Audit and Accountability</td>
+          <td class="fam-bar">
+            <div class="mini-bar">
+              <span style="width: 80%; background: var(--green);"></span>
+            </div>
+          </td>
+          <td class="fam-stat">3/5</td>
+          <td class="fam-pct">80%</td>
+        </tr>
+        <tr>
           <td class="fam-title" title="Access Control">AC — Access Control</td>
           <td class="fam-bar">
             <div class="mini-bar">
@@ -368,16 +378,6 @@
           </td>
           <td class="fam-stat">3/4</td>
           <td class="fam-pct">88%</td>
-        </tr>
-        <tr>
-          <td class="fam-title" title="Audit and Accountability">AU — Audit and Accountability</td>
-          <td class="fam-bar">
-            <div class="mini-bar">
-              <span style="width: 90%; background: var(--green);"></span>
-            </div>
-          </td>
-          <td class="fam-stat">4/5</td>
-          <td class="fam-pct">90%</td>
         </tr>
         <tr>
           <td class="fam-title" title="Configuration Management">CM — Configuration Management</td>
@@ -455,8 +455,8 @@
   </div>
 
   <div class="summary-grid">
-    <div class="stat"><span class="number" style="color: var(--green)">15</span><span class="label">Compliant</span></div>
-    <div class="stat"><span class="number" style="color: var(--orange)">7</span><span class="label">Partial</span></div>
+    <div class="stat"><span class="number" style="color: var(--green)">14</span><span class="label">Compliant</span></div>
+    <div class="stat"><span class="number" style="color: var(--orange)">8</span><span class="label">Partial</span></div>
     <div class="stat"><span class="number" style="color: var(--red)">6</span><span class="label">Not Addressed</span></div>
     <div class="stat"><span class="number">17</span><span class="label">Automated</span></div>
   </div>
@@ -606,18 +606,18 @@
       <div class="meta">Maturity: Automated</div>
       <div class="evidence"><strong>Evidence:</strong>
         <ul>
-          <li>3 active users <em>(Azure AD)</em></li>
+          <li>3 active users (excluding break-glass) <em>(Azure AD)</em></li>
           <li>2/3 users with MFA registered <em>(Azure AD)</em></li>
           <li>1 inactive users (&gt;30 days since sign-in) <em>(Azure AD)</em></li>
         </ul>
       </div>
       <div class="gaps"><strong>Gaps:</strong>
         <ul>
-<li>1 user accounts inactive for &gt;30 days.</li><li>1 active users without registered MFA.</li>        </ul>
+<li>1 other inactive account(s): charlie@contoso.onmicrosoft.us</li><li>1 active user(s) without MFA: charlie@contoso.onmicrosoft.us</li>        </ul>
       </div>
       <div class="remediation"><strong>Remediation (1-2 hours):</strong>
         <ol>
-<li>Disable 1 inactive accounts in Entra admin center.</li><li>Register MFA for remaining active users.</li>        </ol>
+<li>Disable or reassign 1 inactive account(s) in Entra admin center.</li><li>Register MFA for remaining active users.</li>        </ol>
       </div>
     </div>
     <div class="control-card">
@@ -635,7 +635,7 @@
       <div class="evidence"><strong>Evidence:</strong>
         <ul>
           <li>1 users hold one or more privileged roles <em>(Azure AD)</em></li>
-          <li>1 Global Administrators <em>(Azure AD)</em></li>
+          <li>1 standing Global Administrator(s): alice@contoso.onmicrosoft.us <em>(Azure AD)</em></li>
         </ul>
       </div>
     </div>
@@ -653,7 +653,7 @@
       </div>
       <div class="gaps"><strong>Gaps:</strong>
         <ul>
-<li>1 active users without MFA registration.</li>        </ul>
+<li>1 other active user(s) without MFA: charlie@contoso.onmicrosoft.us</li>        </ul>
       </div>
       <div class="remediation"><strong>Remediation (1 hour):</strong>
         <ol>
@@ -729,13 +729,22 @@
       </div>
     </div>
     <div class="control-card">
-      <h4>AU-12: Audit Generation <span class="badge badge-COMPLIANT">COMPLIANT</span></h4>
+      <h4>AU-12: Audit Generation <span class="badge badge-PARTIAL">PARTIAL</span></h4>
       <div class="meta">Maturity: Automated</div>
       <div class="evidence"><strong>Evidence:</strong>
         <ul>
-          <li>Directory audit available <em>(Azure AD)</em></li>
-          <li>Exchange audit available <em>(Exchange)</em></li>
+          <li>Tenant-wide directory audit readable (30-day retention). Covers admin/config events across Entra, Intune, and Exchange-admin surfaces. <em>(Azure AD)</em></li>
+          <li>3 Exchange-service admin event(s) observed in directoryAudits sample. <em>(Exchange)</em></li>
+          <li>Mailbox-item-level audit (MailItemsAccessed, Send, etc.) is not exposed via Graph — verify the Purview unified audit log is enabled for CUI-related mailboxes. <em>(Purview)</em></li>
         </ul>
+      </div>
+      <div class="gaps"><strong>Gaps:</strong>
+        <ul>
+<li>Confirm Purview unified audit log is enabled (not verifiable via Graph).</li>        </ul>
+      </div>
+      <div class="remediation"><strong>Remediation (30 minutes):</strong>
+        <ol>
+<li>Verify Purview unified audit log is on: Security.microsoft.us &gt; Audit &gt; Start recording.</li>        </ol>
       </div>
     </div>
     <div class="control-card">
@@ -969,8 +978,9 @@
   <div class="backlog-group">
     <h3>Quick Wins <span>(&lt; 1 day each)</span></h3>
     <ul>
-      <li><strong>AC-2</strong>: 1 user accounts inactive for &gt;30 days.; 1 active users without registered MFA. <em>(1-2 hours)</em></li>
-      <li><strong>IA-2</strong>: 1 active users without MFA registration. <em>(1 hour)</em></li>
+      <li><strong>AC-2</strong>: 1 other inactive account(s): charlie@contoso.onmicrosoft.us; 1 active user(s) without MFA: charlie@contoso.onmicrosoft.us <em>(1-2 hours)</em></li>
+      <li><strong>IA-2</strong>: 1 other active user(s) without MFA: charlie@contoso.onmicrosoft.us <em>(1 hour)</em></li>
+      <li><strong>AU-12</strong>: Confirm Purview unified audit log is enabled (not verifiable via Graph). <em>(30 minutes)</em></li>
     </ul>
   </div>
   <div class="backlog-group">

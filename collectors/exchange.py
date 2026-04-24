@@ -75,6 +75,7 @@ class ExchangeCollector(BaseCollector):
         }
 
     def _collect_exchange_audit(self) -> dict[str, Any]:
+        warnings_before = len(self.warnings)
         raw = self._safe_get_all(
             "/auditLogs/directoryAudits",
             params={
@@ -83,17 +84,25 @@ class ExchangeCollector(BaseCollector):
                 "$orderby": "activityDateTime desc",
             },
         )
+        call_succeeded = len(self.warnings) == warnings_before
         scope_note = (
-            "Signal derived from Graph directoryAudits (admin/config events). "
-            "Mailbox-item-level audit (MailItemsAccessed, Send, etc.) requires "
-            "Microsoft Purview or the Security & Compliance PowerShell module."
+            "This signal covers Exchange *admin/config* events that are mirrored "
+            "into Graph directoryAudits. Mailbox-item-level audit "
+            "(MailItemsAccessed, Send, MoveToDeletedItems, etc.) is not exposed "
+            "through Graph — it lives in the Microsoft Purview unified audit "
+            "log. Empty here means no Exchange admin activity in the sampled "
+            "window, not that auditing is broken."
         )
         if not raw:
             return {
-                "logsAvailable": False,
+                "logsAvailable": call_succeeded,
                 "reason": (
-                    "No Exchange admin/config events in Graph directoryAudits "
-                    "for this tenant."
+                    "Graph directoryAudits returned no Exchange-service events "
+                    "in the sampled window. This is typical for tenants where "
+                    "Exchange admin activity is infrequent or routed through "
+                    "Purview instead of Graph."
+                    if call_succeeded
+                    else "Graph directoryAudits call failed; see collection warnings."
                 ),
                 "scope": scope_note,
                 "eventCount": 0,

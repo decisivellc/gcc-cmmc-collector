@@ -775,23 +775,56 @@ def _map_au12(evidence: dict[str, Any]) -> dict[str, Any]:
         "AU",
         "Generate audit records for defined events across all components.",
     )
-    azure_ok = bool(((evidence.get("azure_ad") or {}).get("auditLogs") or {}).get("logsAvailable"))
-    exchange_ok = bool(((evidence.get("exchange") or {}).get("exchangeAuditLog") or {}).get("logsAvailable"))
-    entry["evidence"] = [
-        _evidence("Azure AD", "Directory audit available" if azure_ok else "Directory audit not readable"),
-        _evidence("Exchange", "Exchange audit available" if exchange_ok else "Exchange audit not readable"),
-    ]
-    if azure_ok and exchange_ok:
-        entry["status"] = STATUS_COMPLIANT
-        entry["maturity"] = MATURITY_AUTOMATED
-        entry["remediation"] = _remediation("None", BUCKET_QUICK, [])
-    elif azure_ok:
+    azure_audit = ((evidence.get("azure_ad") or {}).get("auditLogs") or {})
+    azure_ok = bool(azure_audit.get("logsAvailable"))
+    exchange_audit = ((evidence.get("exchange") or {}).get("exchangeAuditLog") or {})
+    exchange_events = exchange_audit.get("eventCount") or 0
+    entry["evidence"] = []
+    if azure_ok:
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"Tenant-wide directory audit readable ({azure_audit.get('retentionDays', 'unknown')}-day retention). "
+                "Covers admin/config events across Entra, Intune, and Exchange-admin surfaces.",
+            )
+        )
+    else:
+        entry["evidence"].append(
+            _evidence("Azure AD", "Directory audit not readable — cannot verify audit generation.")
+        )
+    if exchange_events:
+        entry["evidence"].append(
+            _evidence(
+                "Exchange",
+                f"{exchange_events} Exchange-service admin event(s) observed in directoryAudits sample.",
+            )
+        )
+    else:
+        entry["evidence"].append(
+            _evidence(
+                "Exchange",
+                "No Exchange-service admin events in the sampled directoryAudits window — typical for small tenants.",
+                confidence="Medium",
+            )
+        )
+    entry["evidence"].append(
+        _evidence(
+            "Purview",
+            "Mailbox-item-level audit (MailItemsAccessed, Send, etc.) is not exposed via Graph — verify "
+            "the Purview unified audit log is enabled for CUI-related mailboxes.",
+            confidence="Medium",
+        )
+    )
+    if azure_ok:
         entry["status"] = STATUS_PARTIAL
-        entry["gaps"].append("Exchange audit data not available via Graph.")
+        entry["maturity"] = MATURITY_AUTOMATED
+        entry["gaps"].append(
+            "Confirm Purview unified audit log is enabled (not verifiable via Graph)."
+        )
         entry["remediation"] = _remediation(
-            "2 hours",
-            BUCKET_MEDIUM,
-            ["Enable unified audit log and export via Security & Compliance PowerShell."],
+            "30 minutes",
+            BUCKET_QUICK,
+            ["Verify Purview unified audit log is on: Security.microsoft.us > Audit > Start recording."],
         )
     else:
         entry["status"] = STATUS_NOT_ADDRESSED

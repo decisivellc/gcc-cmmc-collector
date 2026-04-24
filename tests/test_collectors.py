@@ -167,12 +167,27 @@ def test_defender_gracefully_degrades():
 # ----- Exchange -------------------------------------------------------
 
 
-def test_exchange_fallback_message_when_no_audit():
+def test_exchange_audit_call_succeeds_with_zero_events():
     client = FakeClient(routes={}, paginated_routes={"/users": [{"id": "u1", "displayName": "A", "userPrincipalName": "a@contoso.onmicrosoft.us", "mail": "a@contoso.onmicrosoft.us"}]})
     evidence = exchange.collect(client)
-    assert evidence["exchangeAuditLog"]["logsAvailable"] is False
-    assert "reason" in evidence["exchangeAuditLog"]
+    audit = evidence["exchangeAuditLog"]
+    # Empty result set is not a failure — call succeeded, just no Exchange-service events.
+    assert audit["logsAvailable"] is True
+    assert audit["eventCount"] == 0
+    assert "typical for tenants" in audit["reason"] or "typical" in audit["reason"].lower()
+    assert "Purview" in audit["scope"]
     assert evidence["mailboxes"][0]["primarySmtpAddress"] == "a@contoso.onmicrosoft.us"
+
+
+def test_exchange_audit_marks_unavailable_when_graph_call_fails():
+    client = FakeClient(
+        routes={},
+        paginated_routes={"/auditLogs/directoryAudits": Exception("graph 500")},
+    )
+    evidence = exchange.collect(client)
+    audit = evidence["exchangeAuditLog"]
+    assert audit["logsAvailable"] is False
+    assert "failed" in audit["reason"].lower() or "collection warnings" in audit["reason"]
 
 
 def test_exchange_uses_graph_audit_when_available():
