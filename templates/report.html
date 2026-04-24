@@ -227,6 +227,51 @@
   .cov-dot.policy_only { background: var(--orange); }
   .cov-dot.not_measured { background: var(--red); }
   .cov-note { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
+  #critical-findings {
+    border: 1px solid var(--red);
+    background: #ffebee;
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  #critical-findings h2 {
+    color: var(--red);
+    border-bottom: none;
+    margin: 0 0 8px;
+    font-size: 18px;
+  }
+  #critical-findings .cf-list { list-style: none; padding: 0; margin: 12px 0 0; }
+  #critical-findings .cf-item {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #fff;
+    border-left: 4px solid var(--red);
+    border-radius: 3px;
+  }
+  #critical-findings .cf-item:last-child { margin-bottom: 0; }
+  #critical-findings .cf-user {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  #critical-findings .cf-factors {
+    display: inline-flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  #critical-findings .cf-factor {
+    background: #ffcdd2;
+    color: #b71c1c;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  #critical-findings .cf-rec {
+    font-size: 13px;
+    color: var(--ink);
+  }
   table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); }
   th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
   th { background: #edf2f7; font-weight: 600; }
@@ -291,6 +336,24 @@
   <p>Generated: {{ report_date }}{% if collected_at %} &middot; Evidence collected: {{ collected_at }}{% endif %}</p>
 </header>
 <main>
+
+{% if critical_findings %}
+<section id="critical-findings">
+  <h2>Critical Findings ({{ critical_findings | length }})</h2>
+  <p style="margin: 0;">Accounts with two or more overlapping risk factors. These typically warrant attention before working the gap list below.</p>
+  <ul class="cf-list">
+    {% for f in critical_findings %}
+    <li class="cf-item">
+      <div class="cf-user">{{ f.userPrincipalName | linkify | safe }}{% if f.displayName and f.displayName != f.userPrincipalName %} &mdash; {{ f.displayName }}{% endif %}</div>
+      <div class="cf-factors">
+        {% for label in f.factorLabels %}<span class="cf-factor">{{ label }}</span>{% endfor %}
+      </div>
+      <div class="cf-rec">{{ f.recommendation }}</div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
 
 {% if collection_warnings %}
 <section id="collection-warnings" style="border: 1px solid var(--orange); background: #fff6e5; padding: 16px 20px; border-radius: 6px; margin-bottom: 32px;">

@@ -18,6 +18,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import admin_links  # noqa: E402
+import critical_findings  # noqa: E402
 import main  # noqa: E402
 from mappers import coverage, nist_800_171  # noqa: E402
 
@@ -62,6 +63,7 @@ def render() -> Path:
         policies=evidence.get("policies") or {},
         secure_score_url=admin_links.secure_score_url(),
         coverage=coverage.compute_coverage(compliance),
+        critical_findings=critical_findings.build_critical_findings(evidence),
     )
     output_dir = ROOT / "reports"
     output_dir.mkdir(exist_ok=True)
