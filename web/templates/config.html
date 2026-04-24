@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Config &middot; CMMC Readiness{% endblock %}
+{% block content %}
+<h2>Configuration</h2>
+<p class="muted">These settings are persisted to <code>config.json</code>. The client secret lives only in memory and is set via the login form.</p>
+
+<form method="post">
+  <div class="card">
+    <h3>Collectors</h3>
+    {% for name in ['azure_ad', 'intune', 'defender', 'exchange', 'policies'] %}
+      {% set settings = (config.collectors or {}).get(name) or {} %}
+      <div class="toggle">
+        <input type="checkbox" id="{{ name }}_enabled" name="{{ name }}_enabled" {% if settings.get('enabled', True) %}checked{% endif %}>
+        <label for="{{ name }}_enabled" style="margin: 0;"><code>{{ name }}</code></label>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h3>Policies library</h3>
+    <div class="field">
+      <label for="policies_site_url">SharePoint site/library URL</label>
+      <input type="url" id="policies_site_url" name="policies_site_url"
+        value="{{ (config.collectors or {}).get('policies', {}).get('site_url') or '' }}"
+        placeholder="https://contoso.sharepoint.us/IT%20Policies/Forms/AllItems.aspx">
+      <div class="hint">Paste the browser URL of your policies document library. Leave blank to skip policy-document collection.</div>
+    </div>
+  </div>
+
+  <button type="submit">Save configuration</button>
+  <a href="{{ url_for('index') }}" class="btn secondary">Cancel</a>
+</form>
+{% endblock %}

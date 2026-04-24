@@ -23,6 +23,10 @@ See [`reports/sample-report.html`](reports/sample-report.html) for a preview (re
 
 ## Quick start
 
+Two ways to run: a CLI (`main.py`) or a Flask web UI shipped as a Docker image.
+
+### CLI
+
 ```bash
 git clone https://github.com/decisivellc/gcc-cmmc-collector.git
 cd gcc-cmmc-collector
@@ -37,6 +41,15 @@ cp config.template.json config.json
 python main.py --config config.json --output ./reports
 open reports/compliance-report.html
 ```
+
+### Web UI (Docker)
+
+```bash
+docker compose up --build
+open http://localhost:8080
+```
+
+On first load, sign in with your GCC-High app-registration credentials. The client secret is held only in the server process's memory for the duration of your session — it is never written to `config.json` or any disk file, and wipes on logout or container restart. Config, reports, and evidence persist to `./data/` via a volume mount.
 
 The `client_secret` can also be provided via the `CMMC_CLIENT_SECRET` environment variable, which overrides the value in `config.json` — useful when you keep the config file in source control but want the secret elsewhere.
 

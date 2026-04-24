@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}CMMC Readiness{% endblock %}</title>
+<style>
+  :root {
+    --green: #2e7d32;
+    --orange: #ef6c00;
+    --red: #c62828;
+    --ink: #1b2733;
+    --muted: #5a6b7b;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --border: #d9e1ea;
+    --accent: #0b2340;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; flex: 1; }
+  header nav a {
+    color: #c8d4e6;
+    text-decoration: none;
+    margin-right: 16px;
+    font-size: 14px;
+  }
+  header nav a:hover { color: #fff; }
+  header form { margin: 0; }
+  main { padding: 32px; max-width: 1100px; margin: 0 auto; }
+  h2 { margin: 0 0 16px; font-size: 22px; }
+  h3 { margin: 24px 0 12px; font-size: 16px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  button, .btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+  }
+  button:hover, .btn:hover { background: #142f55; }
+  button.secondary, .btn.secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--border);
+  }
+  button.danger { background: var(--red); }
+  input[type=text], input[type=password], input[type=url], select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+  .field { margin-bottom: 14px; }
+  .field .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .flash { padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; font-size: 14px; }
+  .flash.ok { background: #e8f5e9; color: var(--green); border-left: 3px solid var(--green); }
+  .flash.error { background: #ffebee; color: var(--red); border-left: 3px solid var(--red); }
+  code { background: #eef2f7; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .spacer { flex: 1; }
+  .toggle { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+  .toggle input { width: auto; }
+  .muted { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CMMC Readiness</h1>
+  <nav>
+    <a href="{{ url_for('index') }}">Dashboard</a>
+    <a href="{{ url_for('config_view') }}">Config</a>
+    <a href="{{ url_for('report') }}">Report</a>
+  </nav>
+  <form method="post" action="{{ url_for('logout') }}">
+    <button type="submit" class="secondary" style="color: #c8d4e6; border-color: #2a4a76;">Log out</button>
+  </form>
+</header>
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+    <div class="flash {{ category }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

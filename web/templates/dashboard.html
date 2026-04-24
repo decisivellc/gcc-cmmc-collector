@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Dashboard &middot; CMMC Readiness{% endblock %}
+{% block content %}
+<h2>Dashboard</h2>
+
+<div class="card">
+  <div class="row">
+    <div style="flex: 1;">
+      <div class="muted">Tenant</div>
+      <div><code>{{ config.tenant_id }}</code></div>
+    </div>
+    <div style="flex: 1;">
+      <div class="muted">App</div>
+      <div><code>{{ config.client_id }}</code></div>
+    </div>
+    <div style="flex: 1;">
+      <div class="muted">Graph base</div>
+      <div><code>{{ config.graph_base_url or 'https://graph.microsoft.us/v1.0' }}</code></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Enabled collectors</h3>
+  <ul style="list-style: none; padding: 0; margin: 0;">
+    {% for name, settings in (config.collectors or {}).items() %}
+    <li style="padding: 4px 0;">
+      <code>{{ name }}</code>
+      {% if settings.get('enabled') %}
+        <span style="color: var(--green);">&#x2713; enabled</span>
+      {% else %}
+        <span class="muted">disabled</span>
+      {% endif %}
+      {% if name == 'policies' and settings.get('site_url') %}
+        &mdash; <a href="{{ settings.site_url }}">{{ settings.site_url }}</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  <p><a href="{{ url_for('config_view') }}" class="btn secondary">Edit collectors</a></p>
+</div>
+
+<div class="card">
+  <h3>Last run</h3>
+  {% if latest %}
+    <p>Collected at <code>{{ latest.collected_at or 'unknown' }}</code>
+    {% if latest.warnings %}&middot; {{ latest.warnings }} collection warning(s){% endif %}
+    </p>
+    <a href="{{ url_for('report') }}" class="btn secondary">View latest report</a>
+  {% else %}
+    <p class="muted">No runs yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Run now</h3>
+  <p class="muted">Expect 10&ndash;60 seconds. The page will not update until the run finishes.</p>
+  <form method="post" action="{{ url_for('run') }}">
+    <button type="submit" onclick="this.disabled=true; this.textContent='Running&hellip;'; this.form.submit();">Run collection</button>
+  </form>
+</div>
+{% endblock %}

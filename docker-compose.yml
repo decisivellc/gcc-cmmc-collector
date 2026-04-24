@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    image: cmmc-gcc-collector:local
+    container_name: cmmc-web
+    ports:
+      - "8080:8080"
+    environment:
+      CMMC_CONFIG_PATH: /app/data/config.json
+      CMMC_OUTPUT_DIR: /app/data/reports
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

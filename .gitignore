@@ -46,3 +46,4 @@ config.json
 .env
 reports/*
 !reports/sample-report.html
+data/

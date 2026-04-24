@@ -288,6 +288,42 @@ def write_outputs(
     }
 
 
+def run_pipeline(config: dict[str, Any], output_dir: Path) -> dict[str, Any]:
+    """Run authentication, collection, mapping, and report writing.
+
+    Returns a dict with keys ``outputs`` (paths), ``summary`` (compliance
+    summary), and ``readiness`` (template-ready breakdown). Callers include
+    the CLI (main) and the Flask web app.
+    """
+    client = authenticate(config)
+    enabled = _enabled_collectors(config)
+    logger.info("Running collectors in parallel: %s", ", ".join(enabled))
+    collected = run_collection(client, enabled, config)
+
+    evidence = {
+        "collected_at": datetime.now(timezone.utc).isoformat(),
+        "tenant_id": config["tenant_id"],
+        "collection_warnings": _flatten_collection_warnings(collected),
+        **collected,
+    }
+    compliance_status = nist_800_171.map(evidence)
+    remediation = generate_remediation_backlog(compliance_status)
+    html = generate_report(compliance_status, evidence)
+    outputs = write_outputs(
+        evidence,
+        compliance_status,
+        remediation,
+        html,
+        output_dir,
+    )
+    return {
+        "outputs": outputs,
+        "summary": compliance_status.get("summary", {}),
+        "readiness": _build_readiness(compliance_status, remediation),
+        "collection_warnings": evidence["collection_warnings"],
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="cmmc-gcc-collector",
@@ -316,33 +352,13 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        client = authenticate(config)
+        result = run_pipeline(config, Path(args.output))
     except Exception as exc:
-        logger.error("Authentication failed: %s", exc)
+        logger.error("Pipeline failed: %s", exc)
         return 3
 
-    enabled = _enabled_collectors(config)
-    logger.info("Running collectors in parallel: %s", ", ".join(enabled))
-    collected = run_collection(client, enabled, config)
-
-    evidence = {
-        "collected_at": datetime.now(timezone.utc).isoformat(),
-        "tenant_id": config["tenant_id"],
-        "collection_warnings": _flatten_collection_warnings(collected),
-        **collected,
-    }
-    compliance_status = nist_800_171.map(evidence)
-    remediation = generate_remediation_backlog(compliance_status)
-    html = generate_report(compliance_status, evidence)
-    outputs = write_outputs(
-        evidence,
-        compliance_status,
-        remediation,
-        html,
-        Path(args.output),
-    )
-    logger.info("Report generated: %s", outputs["report"])
-    print(f"Report generated: {outputs['report']}")
+    logger.info("Report generated: %s", result["outputs"]["report"])
+    print(f"Report generated: {result['outputs']['report']}")
     return 0
 
 

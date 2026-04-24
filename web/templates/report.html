@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Report &middot; CMMC Readiness{% endblock %}
+{% block content %}
+<div class="row" style="margin-bottom: 12px;">
+  <h2 style="margin: 0;">Latest Report</h2>
+  <div class="spacer"></div>
+  <a href="{{ url_for('report_file', filename='compliance-report.html') }}" class="btn secondary" target="_blank">Open full screen</a>
+  <a href="{{ url_for('report_file', filename='evidence.json') }}" class="btn secondary">Download evidence.json</a>
+  <a href="{{ url_for('report_file', filename='remediation-backlog.json') }}" class="btn secondary">Download backlog.json</a>
+</div>
+<iframe
+  src="{{ url_for('report_file', filename='compliance-report.html') }}"
+  style="width: 100%; height: calc(100vh - 220px); border: 1px solid var(--border); border-radius: 6px; background: #fff;"
+></iframe>
+{% endblock %}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign in &middot; CMMC Readiness</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; margin: 0; color: #1b2733; }
+  .wrap { max-width: 480px; margin: 80px auto; padding: 32px; background: #fff; border: 1px solid #d9e1ea; border-radius: 10px; }
+  h1 { margin: 0 0 8px; font-size: 20px; }
+  p.lead { margin: 0 0 24px; color: #5a6b7b; font-size: 14px; }
+  label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+  input { width: 100%; padding: 9px 10px; border: 1px solid #d9e1ea; border-radius: 4px; font-size: 14px; font-family: inherit; }
+  .field { margin-bottom: 16px; }
+  button { background: #0b2340; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; width: 100%; }
+  button:hover { background: #142f55; }
+  .flash { padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; font-size: 14px; }
+  .flash.ok { background: #e8f5e9; color: #2e7d32; border-left: 3px solid #2e7d32; }
+  .flash.error { background: #ffebee; color: #c62828; border-left: 3px solid #c62828; }
+  .hint { color: #5a6b7b; font-size: 12px; margin-top: 4px; }
+  details.help { margin-top: 20px; border: 1px solid #d9e1ea; border-radius: 6px; background: #f9fbfd; }
+  details.help summary { padding: 10px 14px; cursor: pointer; font-weight: 500; font-size: 13px; color: #0b2340; user-select: none; }
+  details.help summary:hover { background: #f2f6fa; }
+  details.help[open] summary { border-bottom: 1px solid #d9e1ea; }
+  details.help .body { padding: 12px 16px; font-size: 13px; }
+  details.help ol { padding-left: 18px; margin: 6px 0; }
+  details.help li { margin-bottom: 6px; }
+  details.help code { background: #eef2f7; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  details.help a { color: #0b2340; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>CMMC Readiness &mdash; Sign in</h1>
+  <p class="lead">Enter your GCC-High app-registration credentials. The client secret is held only in this process's memory for the duration of your session and is wiped on logout or restart.</p>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+    <div class="flash {{ category }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+  <form method="post">
+    <div class="field">
+      <label for="tenant_id">Tenant ID</label>
+      <input type="text" id="tenant_id" name="tenant_id" value="{{ config.tenant_id or '' }}" autocomplete="off" required>
+      <div class="hint">Directory (tenant) GUID from the Entra app registration.</div>
+    </div>
+    <div class="field">
+      <label for="client_id">Client ID</label>
+      <input type="text" id="client_id" name="client_id" value="{{ config.client_id or '' }}" autocomplete="off" required>
+      <div class="hint">Application (client) GUID.</div>
+    </div>
+    <div class="field">
+      <label for="client_secret">Client secret</label>
+      <input type="password" id="client_secret" name="client_secret" autocomplete="off" required>
+      <div class="hint">Not written to disk &mdash; in-memory for this session only.</div>
+    </div>
+    <button type="submit">Sign in</button>
+  </form>
+
+  <details class="help">
+    <summary>How do I find these values?</summary>
+    <div class="body">
+      <p>You need a GCC-High Entra app registration with application-level Graph permissions. First-time setup is ~20 minutes and requires a Global Administrator (or Application Administrator + Privileged Role Administrator) in the tenant.</p>
+      <ol>
+        <li>Go to <a href="https://entra.microsoft.us" target="_blank" rel="noopener">entra.microsoft.us</a> &rarr; <strong>Applications</strong> &rarr; <strong>App registrations</strong> &rarr; <strong>+ New registration</strong>. Name it <code>cmmc-gcc-evidence-collector</code>, single-tenant, no redirect URI.</li>
+        <li>On the app's <strong>Overview</strong> page, copy <strong>Application (client) ID</strong> and <strong>Directory (tenant) ID</strong>.</li>
+        <li>Under <strong>Certificates &amp; secrets</strong> &rarr; <strong>+ New client secret</strong>. Copy the <strong>Value</strong> <em>once</em> &mdash; you will not see it again.</li>
+        <li>Under <strong>API permissions</strong> &rarr; <strong>Add a permission</strong> &rarr; <strong>Microsoft Graph</strong> &rarr; <strong>Application permissions</strong>, add: <code>User.Read.All</code>, <code>Directory.Read.All</code>, <code>AuditLog.Read.All</code>, <code>Policy.Read.All</code>, <code>IdentityRiskEvent.Read.All</code>, <code>DeviceManagementManagedDevices.Read.All</code>, <code>DeviceManagementConfiguration.Read.All</code>, <code>SecurityEvents.Read.All</code>, <code>ThreatIndicators.Read.All</code>, <code>Sites.Read.All</code>.</li>
+        <li>Click <strong>Grant admin consent for &lt;tenant&gt;</strong>. Every row should flip to <strong>Granted</strong>. Missing consent is the #1 cause of <code>403</code> errors.</li>
+      </ol>
+      <p>Full walkthrough: <a href="https://github.com/decisivellc/gcc-cmmc-collector/blob/main/SETUP.md" target="_blank" rel="noopener">SETUP.md</a>. API-driven provisioning is tracked as a separate ticket.</p>
+    </div>
+  </details>
+</div>
+</body>
+</html>
