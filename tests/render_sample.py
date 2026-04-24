@@ -57,6 +57,8 @@ def render() -> Path:
         control_families=main._group_by_family(compliance.get("controls", {})),
         devices=(evidence["intune"].get("devices") or []),
         intune_available=bool(evidence["intune"].get("devices")),
+        intune_by_os=evidence["intune"].get("deviceComplianceByOs") or [],
+        intune_os_filter=evidence["intune"].get("osFilter"),
         user_summary=main._user_summary(evidence["azure_ad"]),
         remediation=remediation,
         collection_warnings=evidence.get("collection_warnings") or [],

@@ -134,6 +134,38 @@ def test_intune_handles_missing_devices():
     assert evidence["deviceComplianceSummary"]["totalDevices"] == 0
 
 
+def test_intune_collects_all_platforms_by_default():
+    paginated = {
+        "/deviceManagement/managedDevices": [
+            {"id": "m1", "deviceName": "Mac", "operatingSystem": "macOS", "complianceState": "compliant"},
+            {"id": "w1", "deviceName": "PC",  "operatingSystem": "Windows", "complianceState": "noncompliant"},
+            {"id": "i1", "deviceName": "iPh", "operatingSystem": "iOS", "complianceState": "noncompliant"},
+        ],
+    }
+    client = FakeClient(routes={}, paginated_routes=paginated)
+    evidence = intune.collect(client)
+    assert evidence["osFilter"] is None
+    assert evidence["deviceComplianceSummary"]["totalDevices"] == 3
+    rows = {r["operatingSystem"]: r for r in evidence["deviceComplianceByOs"]}
+    assert rows["macOS"]["compliancePercentage"] == 100
+    assert rows["Windows"]["compliancePercentage"] == 0
+    assert rows["iOS"]["compliancePercentage"] == 0
+
+
+def test_intune_respects_explicit_os_filter():
+    # When explicitly scoped, only devices of that OS come back from Graph
+    # (the Graph-side $filter). Here we simulate by routing the filtered URL.
+    paginated = {
+        "/deviceManagement/managedDevices": [
+            {"id": "m1", "deviceName": "Mac", "operatingSystem": "macOS", "complianceState": "compliant"},
+        ],
+    }
+    client = FakeClient(routes={}, paginated_routes=paginated)
+    evidence = intune.collect(client, os_filter="macOS")
+    assert evidence["osFilter"] == "macOS"
+    assert len(evidence["devices"]) == 1
+
+
 # ----- Defender --------------------------------------------------------
 
 

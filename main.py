@@ -103,6 +103,8 @@ def run_collection(
             settings = collector_settings.get(name) or {}
             if name == "policies":
                 call = lambda c=client, s=settings: fn(c, s.get("site_url", ""))
+            elif name == "intune":
+                call = lambda c=client, s=settings: fn(c, s.get("filter_os") or None)
             else:
                 call = lambda c=client, f=fn: f(c)
             futures[executor.submit(call)] = name
@@ -141,6 +143,8 @@ def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any])
         control_families=grouped,
         devices=(intune_data.get("devices") or []),
         intune_available=bool(intune_data.get("devices")),
+        intune_by_os=intune_data.get("deviceComplianceByOs") or [],
+        intune_os_filter=intune_data.get("osFilter"),
         user_summary=_user_summary(azure_data),
         remediation=remediation,
         collection_warnings=evidence.get("collection_warnings") or [],

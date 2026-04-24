@@ -15,25 +15,28 @@ logger = logging.getLogger(__name__)
 class IntuneCollector(BaseCollector):
     name = "intune"
 
-    def __init__(self, client: GraphClient, os_filter: str = "macOS") -> None:
+    def __init__(self, client: GraphClient, os_filter: str | None = None) -> None:
         super().__init__(client)
-        self.os_filter = os_filter
+        # Empty string or explicit None means "all operating systems".
+        self.os_filter = os_filter or None
 
     def collect(self) -> dict[str, Any]:
         devices = self._collect_devices()
         policies = self._collect_compliance_policies()
         summary = _summarize_devices(devices)
+        per_os = _summarize_by_os(devices)
         return {
             "devices": devices,
             "compliancePolicies": policies,
             "deviceComplianceSummary": summary,
+            "deviceComplianceByOs": per_os,
+            "osFilter": self.os_filter,
         }
 
     def _collect_devices(self) -> list[dict[str, Any]]:
-        params = {
-            "$filter": f"operatingSystem eq '{self.os_filter}'",
-            "$top": "100",
-        }
+        params: dict[str, Any] = {"$top": "100"}
+        if self.os_filter:
+            params["$filter"] = f"operatingSystem eq '{self.os_filter}'"
         raw = self._safe_get_all("/deviceManagement/managedDevices", params=params)
         devices: list[dict[str, Any]] = []
         for entry in raw:
@@ -91,8 +94,8 @@ class IntuneCollector(BaseCollector):
         return policies
 
 
-def collect(client: GraphClient) -> dict[str, Any]:
-    collector = IntuneCollector(client)
+def collect(client: GraphClient, os_filter: str | None = None) -> dict[str, Any]:
+    collector = IntuneCollector(client, os_filter=os_filter)
     result = collector.collect()
     if collector.warnings:
         result["_collectionWarnings"] = collector.warnings
@@ -122,6 +125,23 @@ def _summarize_devices(devices: list[dict[str, Any]]) -> dict[str, Any]:
         "compliancePercentage": percentage,
         "lastAuditDate": datetime.now(timezone.utc).isoformat(),
     }
+
+
+def _summarize_by_os(devices: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Group devices by operatingSystem and return a per-OS compliance row."""
+    buckets: dict[str, dict[str, Any]] = {}
+    for d in devices:
+        key = d.get("operatingSystem") or "unknown"
+        bucket = buckets.setdefault(key, {"operatingSystem": key, "total": 0, "compliant": 0})
+        bucket["total"] += 1
+        if d.get("complianceState") == "compliant":
+            bucket["compliant"] += 1
+    rows: list[dict[str, Any]] = []
+    for bucket in buckets.values():
+        pct = round((bucket["compliant"] / bucket["total"]) * 100) if bucket["total"] else 0
+        rows.append({**bucket, "compliancePercentage": pct})
+    rows.sort(key=lambda r: r["operatingSystem"].casefold())
+    return rows
 
 
 def _days_since(iso_timestamp: str | None) -> int | None:

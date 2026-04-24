@@ -2,14 +2,14 @@
 
 Open-source pre-assessment readiness tool for small Defense Industrial Base (DIB) contractors on Microsoft 365 GCC-High. Point it at your tenant; get back a self-contained HTML dashboard, a raw JSON evidence snapshot, and a prioritized remediation backlog for NIST 800-171 r2 / CMMC Level 2.
 
-Built for the common small-DIB shape: 3-10 users, macOS endpoints managed by Intune, Defender for Endpoint, a single GCC-High tenant.
+Built for the common small-DIB shape: 3-10 users, mixed endpoints (macOS / Windows / iOS / Android) managed by Intune, Defender for Endpoint, a single GCC-High tenant.
 
 ## What it does
 
 1. Authenticates to the GCC-High Graph API (`graph.microsoft.us`) as an app-only principal.
 2. Collects evidence in parallel from:
    - **Azure AD / Entra ID** — users, MFA registration, privileged role membership, conditional-access policies, directory audit events, risky sign-ins, password policy.
-   - **Intune** — macOS-filtered managed devices, compliance state, compliance policies.
+   - **Intune** — managed devices across all enrolled platforms (set `collectors.intune.filter_os` to scope), compliance state, compliance policies.
    - **Defender for Endpoint** — vulnerabilities, alerts (past 90 days), Secure Score; falls back to Intune antivirus signals when Defender Graph surfaces are not available.
    - **Exchange Online** — mailbox inventory, directory-audit events scoped to Exchange. (DLP policies require Security & Compliance PowerShell — flagged in the report if missing.)
    - **SharePoint policy library** — enumerates a configured document library and matches filenames against the 13 NIST policy-family controls.

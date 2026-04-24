@@ -466,14 +466,34 @@
 </section>
 
 <section id="devices">
-  <h2>Device Compliance ({{ devices|length }})</h2>
+  <h2>Device Compliance ({{ devices|length }}){% if intune_os_filter %} &mdash; filtered to {{ intune_os_filter }}{% endif %}</h2>
   {% if intune_available %}
+  {% if intune_by_os %}
+  <table class="heatmap" style="margin-bottom: 16px;">
+    <thead><tr><th>OS</th><th></th><th>Compliant</th><th>Rate</th></tr></thead>
+    <tbody>
+      {% for row in intune_by_os %}
+      <tr>
+        <td class="fam-title">{{ row.operatingSystem }}</td>
+        <td class="fam-bar">
+          <div class="mini-bar">
+            <span style="width: {{ row.compliancePercentage }}%; background: {% if row.compliancePercentage >= 80 %}var(--green){% elif row.compliancePercentage >= 50 %}var(--orange){% else %}var(--red){% endif %};"></span>
+          </div>
+        </td>
+        <td class="fam-stat">{{ row.compliant }}/{{ row.total }}</td>
+        <td class="fam-pct">{{ row.compliancePercentage }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
   <table>
-    <thead><tr><th>Device</th><th>OS Version</th><th>Compliance</th><th>Last Sync</th></tr></thead>
+    <thead><tr><th>Device</th><th>OS</th><th>OS Version</th><th>Compliance</th><th>Last Sync</th></tr></thead>
     <tbody>
       {% for device in devices %}
       <tr>
         <td>{{ device.deviceName | linkify | safe }}</td>
+        <td>{{ device.operatingSystem or 'n/a' }}</td>
         <td>{{ device.osVersion or 'n/a' }}</td>
         <td><span class="badge badge-{{ device.complianceState }}">{{ device.complianceState }}</span></td>
         <td>{% if device.lastSyncDaysAgo is none %}never{% else %}{{ device.lastSyncDaysAgo }} days ago{% endif %}</td>

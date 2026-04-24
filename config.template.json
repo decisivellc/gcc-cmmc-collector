@@ -18,7 +18,8 @@
     "intune": {
       "enabled": true,
       "device_sync_threshold_days": 30,
-      "filter_os": "macOS"
+      "filter_os": "",
+      "comment": "Leave filter_os empty to report all enrolled platforms. Set to 'macOS', 'Windows', 'iOS', or 'Android' to scope to a single platform."
     },
     "defender": {
       "enabled": true,
