@@ -264,16 +264,7 @@
       {
         "id": "user-1",
         "displayName": "Alice Smith",
-        "primarySmtpAddress": "alice@contoso.onmicrosoft.us",
-        "auditEnabled": true,
-        "auditLog": {
-          "recordCount": null,
-          "dateRange": {
-            "oldest": null,
-            "newest": null
-          },
-          "note": "Exchange mailbox audit detail requires the Security & Compliance PowerShell module."
-        }
+        "primarySmtpAddress": "alice@contoso.onmicrosoft.us"
       }
     ],
     "dlpPolicies": [
@@ -292,13 +283,26 @@
     },
     "exchangeAuditLog": {
       "logsAvailable": true,
+      "scope": "Signal derived from Graph directoryAudits (admin/config events). Mailbox-item-level audit (MailItemsAccessed, Send, etc.) requires Microsoft Purview or the Security & Compliance PowerShell module.",
+      "eventCount": 3,
+      "uniqueInitiators": 2,
+      "topOperations": [
+        {
+          "operation": "Update mailbox",
+          "count": 2
+        },
+        {
+          "operation": "Add mailbox permission",
+          "count": 1
+        }
+      ],
       "oldestRecord": "2099-01-20T00:00:00Z",
       "newestRecord": "2099-04-20T00:00:00Z",
       "sampleEvents": [
         {
           "creationTime": "2099-04-20T14:30:00Z",
           "operation": "Update mailbox",
-          "organizationName": "admin@contoso.onmicrosoft.us",
+          "initiator": "admin@contoso.onmicrosoft.us",
           "resultStatus": "success"
         }
       ]

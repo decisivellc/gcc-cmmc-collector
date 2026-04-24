@@ -49,15 +49,6 @@ class ExchangeCollector(BaseCollector):
                     "id": entry.get("id"),
                     "displayName": entry.get("displayName"),
                     "primarySmtpAddress": mail,
-                    "auditEnabled": True,
-                    "auditLog": {
-                        "recordCount": None,
-                        "dateRange": {"oldest": None, "newest": None},
-                        "note": (
-                            "Exchange mailbox audit detail requires the "
-                            "Security & Compliance PowerShell module."
-                        ),
-                    },
                 }
             )
         return mailboxes
@@ -92,31 +83,54 @@ class ExchangeCollector(BaseCollector):
                 "$orderby": "activityDateTime desc",
             },
         )
-        sample = []
-        for entry in raw[:25]:
-            sample.append(
-                {
-                    "creationTime": entry.get("activityDateTime"),
-                    "operation": entry.get("activityDisplayName"),
-                    "organizationName": (
-                        (entry.get("initiatedBy") or {}).get("user") or {}
-                    ).get("userPrincipalName"),
-                    "resultStatus": entry.get("result"),
-                }
-            )
+        scope_note = (
+            "Signal derived from Graph directoryAudits (admin/config events). "
+            "Mailbox-item-level audit (MailItemsAccessed, Send, etc.) requires "
+            "Microsoft Purview or the Security & Compliance PowerShell module."
+        )
         if not raw:
             return {
                 "logsAvailable": False,
                 "reason": (
-                    "No Exchange events available via Graph directoryAudits "
-                    "for this tenant; use Microsoft Purview for full coverage."
+                    "No Exchange admin/config events in Graph directoryAudits "
+                    "for this tenant."
                 ),
+                "scope": scope_note,
+                "eventCount": 0,
+                "uniqueInitiators": 0,
                 "sampleEvents": [],
                 "oldestRecord": None,
                 "newestRecord": None,
             }
+        initiators: set[str] = set()
+        operations: dict[str, int] = {}
+        sample = []
+        for entry in raw:
+            upn = (
+                ((entry.get("initiatedBy") or {}).get("user") or {}).get("userPrincipalName")
+                or ((entry.get("initiatedBy") or {}).get("app") or {}).get("displayName")
+            )
+            if upn:
+                initiators.add(upn)
+            op = entry.get("activityDisplayName")
+            if op:
+                operations[op] = operations.get(op, 0) + 1
+            if len(sample) < 25:
+                sample.append(
+                    {
+                        "creationTime": entry.get("activityDateTime"),
+                        "operation": op,
+                        "initiator": upn,
+                        "resultStatus": entry.get("result"),
+                    }
+                )
+        top_operations = sorted(operations.items(), key=lambda kv: kv[1], reverse=True)[:5]
         return {
             "logsAvailable": True,
+            "scope": scope_note,
+            "eventCount": len(raw),
+            "uniqueInitiators": len(initiators),
+            "topOperations": [{"operation": op, "count": n} for op, n in top_operations],
             "oldestRecord": raw[-1].get("activityDateTime"),
             "newestRecord": raw[0].get("activityDateTime"),
             "sampleEvents": sample,

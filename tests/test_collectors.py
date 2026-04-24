@@ -184,11 +184,37 @@ def test_exchange_uses_graph_audit_when_available():
                 "activityDisplayName": "Mailbox update",
                 "initiatedBy": {"user": {"userPrincipalName": "admin@contoso.onmicrosoft.us"}},
                 "result": "success",
-            }
+            },
+            {
+                "activityDateTime": "2099-04-19T00:00:00Z",
+                "activityDisplayName": "Mailbox update",
+                "initiatedBy": {"user": {"userPrincipalName": "ops@contoso.onmicrosoft.us"}},
+                "result": "success",
+            },
         ],
     }
     client = FakeClient(routes={}, paginated_routes=paginated)
     evidence = exchange.collect(client)
-    assert evidence["exchangeAuditLog"]["logsAvailable"] is True
+    audit = evidence["exchangeAuditLog"]
+    assert audit["logsAvailable"] is True
+    assert audit["eventCount"] == 2
+    assert audit["uniqueInitiators"] == 2
+    assert audit["topOperations"][0]["operation"] == "Mailbox update"
+    assert audit["topOperations"][0]["count"] == 2
+    assert "Purview" in audit["scope"]
     assert evidence["dlpPolicies"]["available"] is False
     assert "Security & Compliance PowerShell" in evidence["dlpPolicies"]["note"]
+
+
+def test_exchange_mailboxes_no_longer_carry_hardcoded_audit_flag():
+    paginated = {
+        "/users": [
+            {"id": "u1", "displayName": "Alice", "userPrincipalName": "a@contoso.onmicrosoft.us", "mail": "a@contoso.onmicrosoft.us"}
+        ],
+    }
+    client = FakeClient(routes={}, paginated_routes=paginated)
+    evidence = exchange.collect(client)
+    mailbox = evidence["mailboxes"][0]
+    assert mailbox["primarySmtpAddress"] == "a@contoso.onmicrosoft.us"
+    assert "auditEnabled" not in mailbox
+    assert "auditLog" not in mailbox
