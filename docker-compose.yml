@@ -45,6 +45,9 @@ services:
         - action: sync+restart
           path: ./policy_review.py
           target: /app/policy_review.py
+        - action: sync+restart
+          path: ./history.py
+          target: /app/history.py
         - action: rebuild
           path: ./requirements.txt
         - action: rebuild

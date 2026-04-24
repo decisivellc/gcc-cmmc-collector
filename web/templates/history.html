@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}History &middot; CMMC Readiness{% endblock %}
+{% block content %}
+<h2>Run History</h2>
+<p class="muted">Every collection run is archived under <code>reports/archive/&lt;timestamp&gt;/</code>. Retention defaults to 365 days — set <code>reporting.history_retention_days</code> in <code>config.json</code> to change.</p>
+
+{% if not runs %}
+<div class="card">
+  <p>No archived runs yet. Trigger a run from the Dashboard and this page will populate automatically.</p>
+</div>
+{% else %}
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>When</th>
+        <th>Readiness</th>
+        <th>Δ vs prior</th>
+        <th>Compliant</th>
+        <th>Partial</th>
+        <th>Not addressed</th>
+        <th>Warnings</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <td><code>{{ run.timestamp }}</code></td>
+        <td><strong>{{ run.readiness.percentage if run.readiness.percentage is not none else '—' }}%</strong></td>
+        <td>
+          {% if run.delta is none %}—
+          {% elif run.delta > 0 %}<span style="color: var(--green);">+{{ run.delta }}%</span>
+          {% elif run.delta < 0 %}<span style="color: var(--red);">{{ run.delta }}%</span>
+          {% else %}no change
+          {% endif %}
+        </td>
+        <td>{{ run.readiness.compliant if run.readiness.compliant is not none else '—' }}</td>
+        <td>{{ run.readiness.partial if run.readiness.partial is not none else '—' }}</td>
+        <td>{{ run.readiness.notAddressed if run.readiness.notAddressed is not none else '—' }}</td>
+        <td>{% if run.collectionWarnings %}<span style="color: var(--orange);">{{ run.collectionWarnings }}</span>{% else %}0{% endif %}</td>
+        <td><a href="{{ url_for('history_diff', timestamp=run.timestamp) }}" class="btn secondary">Diff</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

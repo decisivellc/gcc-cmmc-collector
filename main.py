@@ -17,6 +17,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import admin_links
 import attestations as attestations_store
 import critical_findings
+import history
 from collectors import azure_ad, defender, email_security, exchange, intune, policies
 from graph_client import GraphClient
 from mappers import coverage, nist_800_171
@@ -364,10 +365,22 @@ def run_pipeline(config: dict[str, Any], output_dir: Path) -> dict[str, Any]:
         html,
         output_dir,
     )
+    readiness = _build_readiness(compliance_status, remediation, attestations)
+    try:
+        history.archive_run(
+            output_dir, evidence, compliance_status, remediation, html, readiness
+        )
+    except Exception as exc:
+        logger.warning("failed to archive run: %s", exc)
+    retention_days = ((config.get("reporting") or {}).get("history_retention_days")) or 365
+    try:
+        history.prune_runs(output_dir, keep_days=int(retention_days))
+    except Exception as exc:
+        logger.warning("failed to prune history: %s", exc)
     return {
         "outputs": outputs,
         "summary": compliance_status.get("summary", {}),
-        "readiness": _build_readiness(compliance_status, remediation),
+        "readiness": readiness,
         "collection_warnings": evidence["collection_warnings"],
     }
 

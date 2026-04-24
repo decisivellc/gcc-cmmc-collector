@@ -35,8 +35,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import attestations as attestations_store  # noqa: E402
+import history as history_mod  # noqa: E402
 import main as collector_main  # noqa: E402
 from mappers import coverage as coverage_mod  # noqa: E402
+from mappers import nist_800_171  # noqa: E402
 
 logger = logging.getLogger("cmmc.web")
 
@@ -160,6 +162,47 @@ def create_app() -> Flask:
             flash("No report generated yet. Click 'Run now' first.", "error")
             return redirect(url_for("index"))
         return render_template("report.html")
+
+    @app.route("/history")
+    def history_view():
+        cfg = _load_config_safe()
+        if not _session_secret() or not _credentials_set(cfg):
+            return redirect(url_for("login"))
+        runs = history_mod.list_runs(REPORTS_DIR)
+        # Annotate each run with the delta versus the immediately-prior run.
+        annotated: list[dict[str, Any]] = []
+        for idx, run in enumerate(runs):
+            prev = runs[idx + 1] if idx + 1 < len(runs) else None
+            prev_pct = (prev or {}).get("readiness", {}).get("percentage")
+            curr_pct = run.get("readiness", {}).get("percentage")
+            delta = (curr_pct - prev_pct) if (curr_pct is not None and prev_pct is not None) else None
+            annotated.append({**run, "delta": delta})
+        return render_template("history.html", runs=annotated)
+
+    @app.route("/history/<timestamp>/diff")
+    def history_diff(timestamp: str):
+        cfg = _load_config_safe()
+        if not _session_secret() or not _credentials_set(cfg):
+            return redirect(url_for("login"))
+        runs = history_mod.list_runs(REPORTS_DIR)
+        idx = next((i for i, r in enumerate(runs) if r.get("timestamp") == timestamp), None)
+        if idx is None:
+            flash("Run not found.", "error")
+            return redirect(url_for("history_view"))
+        current_run = history_mod.load_run(REPORTS_DIR, timestamp)
+        prev_run = (
+            history_mod.load_run(REPORTS_DIR, runs[idx + 1]["timestamp"])
+            if idx + 1 < len(runs) else None
+        )
+        current_status = nist_800_171.map(current_run["evidence"])
+        prev_status = nist_800_171.map(prev_run["evidence"]) if prev_run else None
+        diff = history_mod.compute_diff(prev_status, current_status)
+        return render_template(
+            "history_diff.html",
+            diff=diff,
+            current=current_run,
+            previous=prev_run,
+        )
 
     @app.route("/attestations", methods=["GET"])
     def attestations_view():

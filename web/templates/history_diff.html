@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Run diff &middot; CMMC Readiness{% endblock %}
+{% block content %}
+<h2>Run Diff</h2>
+<p class="muted">
+  Current: <code>{{ current.timestamp }}</code>
+  {% if previous %}&middot; Prior: <code>{{ previous.timestamp }}</code>
+  {% else %}&middot; No prior run to compare against — this is the earliest archived run.
+  {% endif %}
+</p>
+<p><a href="{{ url_for('history_view') }}" class="btn secondary">← Back to history</a></p>
+
+{% if not diff.hasChanges %}
+<div class="card">
+  <p>No control-status changes between these runs.</p>
+</div>
+{% else %}
+  {% if diff.improved %}
+  <div class="card">
+    <h3 style="color: var(--green);">Improved ({{ diff.improved | length }})</h3>
+    <ul>
+      {% for item in diff.improved %}
+      <li><code>{{ item.id }}</code> {{ item.title }}: <strong>{{ item['from'].replace('_', ' ') }}</strong> → <strong>{{ item['to'].replace('_', ' ') }}</strong></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if diff.regressed %}
+  <div class="card">
+    <h3 style="color: var(--red);">Regressed ({{ diff.regressed | length }})</h3>
+    <ul>
+      {% for item in diff.regressed %}
+      <li><code>{{ item.id }}</code> {{ item.title }}: <strong>{{ item['from'].replace('_', ' ') }}</strong> → <strong>{{ item['to'].replace('_', ' ') }}</strong></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if diff.added %}
+  <div class="card">
+    <h3>Newly tracked ({{ diff.added | length }})</h3>
+    <ul>
+      {% for item in diff.added %}
+      <li><code>{{ item.id }}</code> {{ item.title }}: <strong>{{ item.status.replace('_', ' ') }}</strong></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if diff.removed %}
+  <div class="card">
+    <h3>No longer tracked ({{ diff.removed | length }})</h3>
+    <ul>
+      {% for item in diff.removed %}
+      <li><code>{{ item.id }}</code> {{ item.title }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}
