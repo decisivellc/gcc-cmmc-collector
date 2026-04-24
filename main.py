@@ -420,6 +420,12 @@ def main(argv: list[str] | None = None) -> int:
         parser.add_argument("--config", default="./config.json")
         parser.add_argument("--display-name", default="cmmc-gcc-evidence-collector")
         parser.add_argument("--secret-ttl-days", type=int, default=180)
+        parser.add_argument(
+            "--bootstrap-client-id",
+            default=None,
+            help="Override the public client id used for device-code auth. "
+                 "Default is Microsoft Graph PowerShell (preauthorized in GCC-High).",
+        )
     else:
         parser.add_argument("--config", required=True)
         parser.add_argument("--output", default="./reports")
@@ -461,6 +467,7 @@ def _bootstrap_command(args) -> int:
             tenant_identifier=args.tenant,
             app_display_name=args.display_name,
             secret_ttl_days=args.secret_ttl_days,
+            bootstrap_client_id=args.bootstrap_client_id or bootstrap.DEFAULT_BOOTSTRAP_CLIENT_ID,
         )
     except bootstrap.BootstrapError as exc:
         logger.error("Bootstrap failed: %s", exc)

@@ -24,9 +24,13 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-# Public client ID for Azure CLI — works for device-code auth on commercial,
-# GCC, and GCC-High. This means we don't need a pre-existing app to bootstrap.
-AZURE_CLI_CLIENT_ID = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
+# Microsoft Graph PowerShell's public client id. Unlike Azure CLI's client,
+# this one IS preauthorized to request Microsoft Graph tokens in GCC-High.
+# (Azure CLI's ID `04b07795-8ddb-461a-bbee-02f9e1bf7b46` fails with
+# AADSTS65002 — first-party app consent must be preauthorized in sovereign
+# clouds.) Users can override via --bootstrap-client-id if their tenant has
+# a different pre-registered public client.
+DEFAULT_BOOTSTRAP_CLIENT_ID = "14d82eec-204b-4c2f-b7e8-296a70dab67e"
 
 # Microsoft Graph service principal's immutable appId.
 GRAPH_APP_ID = "00000003-0000-0000-c000-000000000000"
@@ -69,6 +73,7 @@ def bootstrap_app(
     tenant_identifier: str,
     app_display_name: str = DEFAULT_APP_DISPLAY_NAME,
     secret_ttl_days: int = DEFAULT_SECRET_TTL_DAYS,
+    bootstrap_client_id: str = DEFAULT_BOOTSTRAP_CLIENT_ID,
     msal_module: Any = None,
     requests_module: Any = None,
     print_fn=print,
@@ -83,7 +88,7 @@ def bootstrap_app(
 
     # 1. Device-code auth.
     authority = f"{GCC_HIGH_AUTHORITY_BASE}/{tenant_identifier}"
-    app = msal.PublicClientApplication(client_id=AZURE_CLI_CLIENT_ID, authority=authority)
+    app = msal.PublicClientApplication(client_id=bootstrap_client_id, authority=authority)
     flow = app.initiate_device_flow(scopes=BOOTSTRAP_SCOPES)
     if "user_code" not in flow:
         raise BootstrapError(f"Failed to initiate device flow: {flow}")
