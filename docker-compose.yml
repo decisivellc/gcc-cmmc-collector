@@ -9,6 +9,29 @@ services:
       CMMC_CONFIG_PATH: /app/data/config.json
       CMMC_OUTPUT_DIR: /app/data/reports
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-}
+      CMMC_DEV: ${CMMC_DEV:-}
     volumes:
       - ./data:/app/data
     restart: unless-stopped
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./web
+          target: /app/web
+        - action: sync+restart
+          path: ./main.py
+          target: /app/main.py
+        - action: sync+restart
+          path: ./collectors
+          target: /app/collectors
+        - action: sync+restart
+          path: ./mappers
+          target: /app/mappers
+        - action: sync+restart
+          path: ./templates
+          target: /app/templates
+        - action: sync+restart
+          path: ./graph_client.py
+          target: /app/graph_client.py
+        - action: rebuild
+          path: ./requirements.txt

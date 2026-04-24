@@ -56,6 +56,9 @@ PUBLIC_CONFIG_FIELDS = {
 def create_app() -> Flask:
     app = Flask(__name__, template_folder="templates", static_folder="static")
     app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets_lib.token_hex(32)
+    if os.environ.get("CMMC_DEV") == "1":
+        app.config["TEMPLATES_AUTO_RELOAD"] = True
+        app.jinja_env.auto_reload = True
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
     @app.before_request
@@ -226,5 +229,11 @@ def _latest_run_info() -> dict[str, Any] | None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    dev_mode = os.environ.get("CMMC_DEV") == "1"
     app = create_app()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "8080")), debug=False)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", "8080")),
+        debug=dev_mode,
+        use_reloader=dev_mode,
+    )

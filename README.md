@@ -51,6 +51,20 @@ open http://localhost:8080
 
 On first load, sign in with your GCC-High app-registration credentials. The client secret is held only in the server process's memory for the duration of your session — it is never written to `config.json` or any disk file, and wipes on logout or container restart. Config, reports, and evidence persist to `./data/` via a volume mount.
 
+#### Dev mode (live reload)
+
+```bash
+CMMC_DEV=1 docker compose up --watch
+```
+
+`CMMC_DEV=1` turns on Flask debug mode and template auto-reload inside the container. `--watch` activates the `develop.watch` block in `docker-compose.yml` which syncs `web/`, `main.py`, `collectors/`, `mappers/`, `templates/`, and `graph_client.py` from host into the container on save and restarts the app. Edit a Python file or template, reload your browser — done. Requires Docker Compose v2.22+.
+
+To run the Flask app directly on the host instead of in Docker:
+
+```bash
+CMMC_DEV=1 python -m web.app
+```
+
 The `client_secret` can also be provided via the `CMMC_CLIENT_SECRET` environment variable, which overrides the value in `config.json` — useful when you keep the config file in source control but want the secret elsewhere.
 
 ## Azure app registration
