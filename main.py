@@ -196,66 +196,92 @@ def _build_readiness(
     compliance_status: dict[str, Any],
     remediation: dict[str, Any],
 ) -> dict[str, Any]:
-    controls = compliance_status.get("controls", {}) or {}
-    families: dict[str, dict[str, Any]] = {}
-    for cid, control in controls.items():
-        family = control.get("family", cid.split("-")[0])
-        bucket = families.setdefault(
-            family,
-            {"key": family, "title": nist_800_171.FAMILY_TITLES.get(family, family),
-             "total": 0, "compliant": 0, "partial": 0, "notAddressed": 0},
-        )
-        bucket["total"] += 1
-        status = control.get("status")
-        if status == "COMPLIANT":
-            bucket["compliant"] += 1
-        elif status == "PARTIAL":
-            bucket["partial"] += 1
-        else:
-            bucket["notAddressed"] += 1
+    """Compute readiness across all 110 NIST 800-171r2 requirements.
+
+    Unmeasured requirements (those with no internal control mapping) count
+    as NOT_ADDRESSED. When a requirement maps to multiple internal controls
+    the best status among them wins.
+    """
+    coverage_report = coverage.compute_coverage(compliance_status)
+    total = coverage_report["totalRequirements"]
+
+    # Aggregate effective status per requirement.
+    compliant = partial = not_addressed = 0
     family_rows: list[dict[str, Any]] = []
-    for row in families.values():
-        total = row["total"] or 1
-        row["pct"] = round(((row["compliant"] * 1.0 + row["partial"] * 0.5) / total) * 100)
-        family_rows.append(row)
+    for family in coverage_report["families"]:
+        fam_compliant = fam_partial = fam_not = 0
+        for req in family["requirements"]:
+            status = req.get("effectiveStatus") or "NOT_ADDRESSED"
+            if status == "COMPLIANT":
+                fam_compliant += 1
+                compliant += 1
+            elif status == "PARTIAL":
+                fam_partial += 1
+                partial += 1
+            else:
+                fam_not += 1
+                not_addressed += 1
+        fam_total = len(family["requirements"]) or 1
+        fam_pct = round(((fam_compliant + fam_partial * 0.5) / fam_total) * 100)
+        family_rows.append(
+            {
+                "key": family["key"],
+                "title": family["title"],
+                "total": len(family["requirements"]),
+                "compliant": fam_compliant,
+                "partial": fam_partial,
+                "notAddressed": fam_not,
+                "pct": fam_pct,
+            }
+        )
     family_rows.sort(key=lambda r: (r["pct"], r["key"]))
 
+    percentage = round(((compliant + partial * 0.5) / total) * 100) if total else 0
+
+    # Top gaps remain control-level (more actionable for IT staff).
+    controls = compliance_status.get("controls", {}) or {}
     bucket_order = {"quick_win": 0, "medium": 1, "heavy_lift": 2}
     gaps: list[dict[str, Any]] = []
     for cid, control in controls.items():
         if control.get("status") == "COMPLIANT":
             continue
         remediation_info = control.get("remediation") or {}
-        gaps.append({
-            "id": cid,
-            "title": control.get("title"),
-            "status": control.get("status"),
-            "firstGap": (control.get("gaps") or [""])[0],
-            "effort": remediation_info.get("effort", "Unknown"),
-            "bucket": remediation_info.get("bucket", "medium"),
-        })
-    gaps.sort(key=lambda g: (
-        0 if g["status"] == "NOT_ADDRESSED" else 1,
-        bucket_order.get(g["bucket"], 1),
-    ))
+        gaps.append(
+            {
+                "id": cid,
+                "title": control.get("title"),
+                "status": control.get("status"),
+                "firstGap": (control.get("gaps") or [""])[0],
+                "effort": remediation_info.get("effort", "Unknown"),
+                "bucket": remediation_info.get("bucket", "medium"),
+            }
+        )
+    gaps.sort(
+        key=lambda g: (
+            0 if g["status"] == "NOT_ADDRESSED" else 1,
+            bucket_order.get(g["bucket"], 1),
+        )
+    )
 
     quick_win_count = sum(
         1 for tasks in (remediation.get("quick_win") or [])
         if tasks.get("status") != "COMPLIANT"
     )
 
+    # Automated maturity is still a control-level signal.
     summary = compliance_status.get("summary", {}) or {}
-    total_controls = len(controls)
     return {
-        "total": total_controls,
-        "compliant": summary.get("compliant", 0),
-        "partial": summary.get("partial", 0),
-        "notAddressed": summary.get("notAddressed", 0),
+        "total": total,
+        "compliant": compliant,
+        "partial": partial,
+        "notAddressed": not_addressed,
         "automatedMaturity": summary.get("automatedMaturity", 0),
-        "percentage": summary.get("overallPercentage", 0),
+        "percentage": percentage,
         "quickWins": quick_win_count,
         "familyRows": family_rows,
         "topGaps": gaps[:5],
+        "controlsMeasured": len(controls),
+        "requirementsWithoutEvidence": coverage_report["summary"]["not_measured"],
     }
 
 

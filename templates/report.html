@@ -388,19 +388,15 @@
   <div class="readiness-headline">
     <div class="readiness-score">
       <span class="big-pct">{{ readiness.compliant }} / {{ readiness.total }}</span>
-      <span class="score-label">controls assessment-ready</span>
+      <span class="score-label">NIST 800-171r2 requirements met</span>
     </div>
     <div class="readiness-narrative">
       <strong>{{ readiness.percentage }}%</strong> weighted readiness
       ({{ readiness.compliant }} compliant, {{ readiness.partial }} partial, {{ readiness.notAddressed }} not addressed).
+      {{ readiness.requirementsWithoutEvidence }} of the {{ readiness.notAddressed }} not-addressed items have no automated evidence source — they need policy docs, process attestation, or a new collector (see Coverage Map).
       {% if readiness.quickWins %}
         <strong>{{ readiness.quickWins }} quick win{{ '' if readiness.quickWins == 1 else 's' }}</strong>
-        available — each estimated at a few hours or less. Closing all of them would move you to
-        <strong>{{ ((readiness.compliant + readiness.quickWins) * 100 / readiness.total) | round | int }}%</strong>.
-      {% elif readiness.partial == 0 and readiness.notAddressed == 0 %}
-        Every tracked control is compliant. Focus next on ongoing evidence capture and annual reviews.
-      {% else %}
-        Remaining gaps require medium-to-heavy effort — see the Remediation Backlog for sequencing.
+        available — each estimated at a few hours or less.
       {% endif %}
       <div class="readiness-bar"><span style="width: {{ readiness.percentage }}%"></span></div>
     </div>
@@ -408,7 +404,7 @@
 
   <div class="readiness-grid">
     <div class="readiness-panel">
-      <h3>Readiness by control family</h3>
+      <h3>Readiness by NIST family</h3>
       <table class="heatmap">
         {% for row in readiness.familyRows %}
         <tr>
