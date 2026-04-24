@@ -34,7 +34,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import attestations as attestations_store  # noqa: E402
 import main as collector_main  # noqa: E402
+from mappers import coverage as coverage_mod  # noqa: E402
 
 logger = logging.getLogger("cmmc.web")
 
@@ -159,6 +161,62 @@ def create_app() -> Flask:
             return redirect(url_for("index"))
         return render_template("report.html")
 
+    @app.route("/attestations", methods=["GET"])
+    def attestations_view():
+        cfg = _load_config_safe()
+        if not _session_secret() or not _credentials_set(cfg):
+            return redirect(url_for("login"))
+        all_rows = _attestation_rows()
+        unmeasured_rows = [r for r in all_rows if r["coverageLevel"] == "not_measured"]
+        attested_rows = [r for r in unmeasured_rows if r["attestation"]]
+        needs_rows = [r for r in unmeasured_rows if not r["attestation"]]
+        filter_level = request.args.get("filter", "needs")
+        if filter_level == "needs":
+            rows = needs_rows
+        elif filter_level == "attested":
+            rows = attested_rows
+        elif filter_level == "all_unmeasured":
+            rows = unmeasured_rows
+        else:
+            filter_level = "needs"
+            rows = needs_rows
+        return render_template(
+            "attestations.html",
+            rows=rows,
+            filter_level=filter_level,
+            unmeasured_total=len(unmeasured_rows),
+            attested_count=len(attested_rows),
+            needs_count=len(needs_rows),
+        )
+
+    @app.route("/attestations/<req_id>", methods=["POST"])
+    def attestation_save(req_id: str):
+        if not _session_secret() or not _credentials_set(_load_config_safe()):
+            return redirect(url_for("login"))
+        action = request.form.get("action", "save")
+        if action == "delete":
+            attestations_store.remove(req_id)
+            flash(f"Attestation for {req_id} removed.", "ok")
+            return redirect(url_for("attestations_view"))
+        status = (request.form.get("status") or "").strip()
+        rationale = (request.form.get("rationale") or "").strip()
+        review_by = (request.form.get("review_by") or "").strip() or None
+        if status not in attestations_store.VALID_STATUSES:
+            flash("Invalid status.", "error")
+            return redirect(url_for("attestations_view"))
+        if len(rationale) < 15:
+            flash("Rationale is too short — describe how the requirement is met.", "error")
+            return redirect(url_for("attestations_view"))
+        attestations_store.upsert(
+            req_id,
+            status=status,
+            rationale=rationale,
+            attested_by=_attesting_user(cfg=_load_config_safe()),
+            review_by=review_by,
+        )
+        flash(f"Attestation for {req_id} saved.", "ok")
+        return redirect(url_for("attestations_view", filter=request.args.get("filter", "unmeasured")))
+
     @app.route("/reports/<path:filename>")
     def report_file(filename: str):
         safe_dir = REPORTS_DIR.resolve()
@@ -199,6 +257,28 @@ def _credentials_set(cfg: dict[str, Any]) -> bool:
 
 def _session_secret() -> str | None:
     return SESSION_SECRETS.get(session.get("sid", ""))
+
+
+def _attesting_user(cfg: dict[str, Any]) -> str:
+    """Best-effort UPN for who is making the attestation.
+
+    We don't currently collect the operator's own UPN (login is
+    app-registration credentials, not the human's). Fall back to a generic
+    label that makes clear who committed — the `attestedAt` timestamp keeps
+    the record auditable regardless.
+    """
+    return (cfg.get("attestor_upn") or "operator@local").strip()
+
+
+def _attestation_rows() -> list[dict[str, Any]]:
+    """Flatten the 110 requirements into a list suitable for the attestation page."""
+    records = attestations_store.load()
+    cov = coverage_mod.compute_coverage({"controls": {}}, records)
+    rows: list[dict[str, Any]] = []
+    for family in cov["families"]:
+        for req in family["requirements"]:
+            rows.append({**req, "family": family["key"], "familyTitle": family["title"]})
+    return rows
 
 
 def _default_collectors() -> dict[str, Any]:

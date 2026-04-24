@@ -46,27 +46,25 @@ def _best_status(statuses: list[str]) -> str | None:
     return min(statuses, key=lambda s: STATUS_ORDER.get(s, 3))
 
 
-def compute_coverage(compliance_status: dict[str, Any]) -> dict[str, Any]:
+def compute_coverage(
+    compliance_status: dict[str, Any],
+    attestations: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Return a structured coverage report vs the 110 requirements.
 
-    Shape:
-        {
-            "totalRequirements": 110,
-            "summary": {"measured": N, "policy_only": M, "not_measured": K},
-            "families": [
-                {"key": "3.1", "title": "Access Control", "requirements": [...]}
-            ],
-        }
-
-    Each requirement carries ``coverageLevel`` and, when a control-based
-    mapping exists, ``effectiveStatus`` (best of mapped controls) plus
-    the list of mapping controls with their individual statuses.
+    ``attestations`` is a map of ``requirement_id`` -> attestation record
+    (status, rationale, attestedBy, attestedAt, [reviewBy]). Attestations
+    fill in the ``effectiveStatus`` for requirements that have no internal
+    automated signal. If a requirement has both, the automated signal wins
+    but the attestation is still shown as supplementary evidence.
     """
     catalog = _load_catalog()
     controls = (compliance_status or {}).get("controls") or {}
+    attestations = attestations or {}
 
     families: dict[str, dict[str, Any]] = {}
     summary = {LEVEL_MEASURED: 0, LEVEL_POLICY_ONLY: 0, LEVEL_NOT_MEASURED: 0}
+    attested_count = 0
 
     for req in catalog["requirements"]:
         family_key = req["id"].rsplit(".", 1)[0]
@@ -107,6 +105,17 @@ def compute_coverage(compliance_status: dict[str, Any]) -> dict[str, Any]:
 
         summary[level] += 1
 
+        automated_status = _best_status(statuses)
+        attestation = attestations.get(req["id"])
+        if attestation:
+            attested_count += 1
+
+        effective_status = automated_status
+        source = "automated" if automated_status else None
+        if not effective_status and attestation:
+            effective_status = attestation.get("status")
+            source = "attestation"
+
         family_bucket["requirements"].append(
             {
                 "id": req["id"],
@@ -115,7 +124,9 @@ def compute_coverage(compliance_status: dict[str, Any]) -> dict[str, Any]:
                 "coverageLevel": level,
                 "note": req.get("note"),
                 "mapping": mapping,
-                "effectiveStatus": _best_status(statuses),
+                "effectiveStatus": effective_status,
+                "effectiveStatusSource": source,
+                "attestation": attestation,
             }
         )
 
@@ -126,5 +137,6 @@ def compute_coverage(compliance_status: dict[str, Any]) -> dict[str, Any]:
     return {
         "totalRequirements": catalog["totalRequirements"],
         "summary": summary,
+        "attestedCount": attested_count,
         "families": ordered_families,
     }

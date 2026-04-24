@@ -64,7 +64,7 @@ def render() -> Path:
         collection_warnings=evidence.get("collection_warnings") or [],
         policies=evidence.get("policies") or {},
         secure_score_url=admin_links.secure_score_url(),
-        coverage=coverage.compute_coverage(compliance),
+        coverage=coverage.compute_coverage(compliance, {}),
         critical_findings=critical_findings.build_critical_findings(evidence),
     )
     output_dir = ROOT / "reports"

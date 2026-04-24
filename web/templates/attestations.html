@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Attestations &middot; CMMC Readiness{% endblock %}
+{% block content %}
+<h2>Manual Attestations</h2>
+<p class="muted">
+  This tool verifies 49 of 110 NIST 800-171r2 requirements automatically via Graph.
+  The other <strong>{{ unmeasured_total }}</strong> require your attestation &mdash;
+  physical controls, process items, and signals that live outside Graph.
+  Attestations apply only to these unmeasured requirements; automated signals
+  are never overridden.
+</p>
+<p class="muted">
+  Progress: <strong>{{ attested_count }} / {{ unmeasured_total }}</strong> unmeasured requirements attested.
+  {{ needs_count }} remaining.
+</p>
+
+<div class="card">
+  <strong>Filter:</strong>
+  <a href="{{ url_for('attestations_view', filter='needs') }}" class="{% if filter_level == 'needs' %}btn{% else %}btn secondary{% endif %}">Needs attestation ({{ needs_count }})</a>
+  <a href="{{ url_for('attestations_view', filter='attested') }}" class="{% if filter_level == 'attested' %}btn{% else %}btn secondary{% endif %}">Attested ({{ attested_count }})</a>
+  <a href="{{ url_for('attestations_view', filter='all_unmeasured') }}" class="{% if filter_level == 'all_unmeasured' %}btn{% else %}btn secondary{% endif %}">All unmeasured ({{ unmeasured_total }})</a>
+</div>
+
+<style>
+  .attest-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .attest-row summary { cursor: pointer; font-weight: 500; list-style: none; }
+  .attest-row summary::-webkit-details-marker { display: none; }
+  .attest-row .req-id {
+    font-family: Menlo, monospace;
+    color: var(--muted);
+    font-size: 12px;
+    margin-right: 8px;
+  }
+  .attest-row .req-title { font-size: 14px; }
+  .attest-row .req-meta { margin-top: 6px; color: var(--muted); font-size: 12px; }
+  .attest-row .current {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+  }
+  .current.compliant { background: #e8f5e9; color: var(--green); }
+  .current.partial { background: #fff3e0; color: var(--orange); }
+  .current.not_addressed, .current.none { background: #ffebee; color: var(--red); }
+  .attest-row form { margin-top: 14px; }
+  .attest-row .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .attest-row textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+    min-height: 60px;
+  }
+  .attest-row .existing-rationale {
+    background: #f5f7fa;
+    padding: 10px 12px;
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  .attest-row .existing-rationale .meta { color: var(--muted); font-size: 11px; margin-top: 4px; }
+</style>
+
+{% for row in rows %}
+<details class="attest-row">
+  <summary>
+    <span class="req-id">{{ row.id }}</span>
+    <span class="req-title">{{ row.title }}</span>
+    {% set eff = row.effectiveStatus %}
+    {% if row.attestation %}
+      <span class="current {{ row.attestation.status | lower }}">attested · {{ row.attestation.status.replace('_', ' ') }}</span>
+    {% else %}
+      <span class="current none">needs attestation</span>
+    {% endif %}
+  </summary>
+  <div class="req-meta">{{ row.description }}</div>
+  <div class="req-meta">
+    Family: {{ row.family }} {{ row.familyTitle }}
+    {% if row.note %}<br><em>Why no automated signal:</em> {{ row.note }}{% endif %}
+  </div>
+
+  {% if row.attestation %}
+  <div class="existing-rationale">
+    <div><strong>Current attestation:</strong> {{ row.attestation.rationale }}</div>
+    <div class="meta">
+      {{ row.attestation.status.replace('_', ' ') }} ·
+      by {{ row.attestation.attestedBy }} on {{ row.attestation.attestedAt[:10] }}
+      {% if row.attestation.reviewBy %}· review by {{ row.attestation.reviewBy }}{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('attestation_save', req_id=row.id, filter=filter_level) }}">
+    <div class="side-by-side" style="margin-top: 10px;">
+      <div>
+        <label>Status</label>
+        <select name="status" required>
+          <option value="COMPLIANT" {% if row.attestation and row.attestation.status == 'COMPLIANT' %}selected{% endif %}>Compliant</option>
+          <option value="PARTIAL" {% if row.attestation and row.attestation.status == 'PARTIAL' %}selected{% endif %}>Partial</option>
+          <option value="NOT_ADDRESSED" {% if row.attestation and row.attestation.status == 'NOT_ADDRESSED' %}selected{% endif %}>Not addressed</option>
+        </select>
+      </div>
+      <div>
+        <label>Next review (YYYY-MM-DD, optional)</label>
+        <input type="text" name="review_by" value="{{ row.attestation.reviewBy if row.attestation else '' }}" placeholder="2027-04-24">
+      </div>
+    </div>
+    <div style="margin-top: 8px;">
+      <label>Rationale</label>
+      <textarea name="rationale" required placeholder="Describe how this requirement is met — process, artifact location, named owner, etc.">{{ row.attestation.rationale if row.attestation else '' }}</textarea>
+    </div>
+    <div style="margin-top: 10px;">
+      <button type="submit">{% if row.attestation %}Update{% else %}Attest{% endif %}</button>
+      {% if row.attestation %}
+      <button type="submit" name="action" value="delete" class="danger" onclick="return confirm('Remove attestation for {{ row.id }}?');">Remove</button>
+      {% endif %}
+    </div>
+  </form>
+</details>
+{% else %}
+<p>No requirements match this filter.</p>
+{% endfor %}
+{% endblock %}

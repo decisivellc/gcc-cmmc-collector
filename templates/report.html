@@ -626,7 +626,7 @@
             <span class="cov-dot {{ req.coverageLevel }}"></span>
             {% if req.coverageLevel == 'measured' %}Measured{% elif req.coverageLevel == 'policy_only' %}Policy-only{% else %}Not measured{% endif %}
             {% if req.effectiveStatus %}
-              <br><span style="font-size: 11px; color: var(--muted);">best status: {{ req.effectiveStatus.replace('_', ' ') }}</span>
+              <br><span style="font-size: 11px; color: var(--muted);">{{ req.effectiveStatus.replace('_', ' ') }}{% if req.effectiveStatusSource == 'attestation' %} · attested{% endif %}</span>
             {% endif %}
           </td>
           <td>
@@ -634,6 +634,12 @@
               {% for m in req.mapping %}<code>{{ m.controlId }}</code>{% if not loop.last %}, {% endif %}{% endfor %}
             {% endif %}
             {% if req.note %}<span class="cov-note">{{ req.note }}</span>{% endif %}
+            {% if req.attestation %}
+            <span class="cov-note" style="border-left: 3px solid var(--accent); padding-left: 6px; margin-top: 4px;">
+              Attested ({{ req.attestation.status.replace('_', ' ') }}): {{ req.attestation.rationale }}
+              — {{ req.attestation.attestedBy }}, {{ req.attestation.attestedAt[:10] }}
+            </span>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}

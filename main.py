@@ -15,6 +15,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 import admin_links
+import attestations as attestations_store
 import critical_findings
 from collectors import azure_ad, defender, exchange, intune, policies
 from graph_client import GraphClient
@@ -120,7 +121,11 @@ def run_collection(
     return results
 
 
-def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any]) -> str:
+def generate_report(
+    compliance_status: dict[str, Any],
+    evidence: dict[str, Any],
+    attestations: dict[str, dict[str, Any]] | None = None,
+) -> str:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATES_DIR)),
         autoescape=select_autoescape(["html", "xml"]),
@@ -135,11 +140,12 @@ def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any])
     remediation = nist_800_171.generate_remediation_backlog(compliance_status)
     intune_data = evidence.get("intune") or {}
     azure_data = evidence.get("azure_ad") or {}
+    attestations = attestations or {}
     return template.render(
         report_date=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         collected_at=evidence.get("collected_at"),
         summary=compliance_status.get("summary", {}),
-        readiness=_build_readiness(compliance_status, remediation),
+        readiness=_build_readiness(compliance_status, remediation, attestations),
         control_families=grouped,
         devices=(intune_data.get("devices") or []),
         intune_available=bool(intune_data.get("devices")),
@@ -150,7 +156,7 @@ def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any])
         collection_warnings=evidence.get("collection_warnings") or [],
         policies=evidence.get("policies") or {},
         secure_score_url=admin_links.secure_score_url(),
-        coverage=coverage.compute_coverage(compliance_status),
+        coverage=coverage.compute_coverage(compliance_status, attestations),
         critical_findings=critical_findings.build_critical_findings(evidence),
     )
 
@@ -195,14 +201,15 @@ def _group_by_family(controls: dict[str, dict[str, Any]]) -> list[dict[str, Any]
 def _build_readiness(
     compliance_status: dict[str, Any],
     remediation: dict[str, Any],
+    attestations: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Compute readiness across all 110 NIST 800-171r2 requirements.
 
     Unmeasured requirements (those with no internal control mapping) count
-    as NOT_ADDRESSED. When a requirement maps to multiple internal controls
-    the best status among them wins.
+    as NOT_ADDRESSED unless manually attested. Attestations fill in
+    unmeasured items; automated signal wins when both exist.
     """
-    coverage_report = coverage.compute_coverage(compliance_status)
+    coverage_report = coverage.compute_coverage(compliance_status, attestations)
     total = coverage_report["totalRequirements"]
 
     # Aggregate effective status per requirement.
@@ -344,8 +351,9 @@ def run_pipeline(config: dict[str, Any], output_dir: Path) -> dict[str, Any]:
         **collected,
     }
     compliance_status = nist_800_171.map(evidence)
+    attestations = attestations_store.load()
     remediation = generate_remediation_backlog(compliance_status)
-    html = generate_report(compliance_status, evidence)
+    html = generate_report(compliance_status, evidence, attestations=attestations)
     outputs = write_outputs(
         evidence,
         compliance_status,

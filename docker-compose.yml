@@ -36,5 +36,14 @@ services:
         - action: sync+restart
           path: ./admin_links.py
           target: /app/admin_links.py
+        - action: sync+restart
+          path: ./attestations.py
+          target: /app/attestations.py
+        - action: sync+restart
+          path: ./critical_findings.py
+          target: /app/critical_findings.py
+        - action: sync+restart
+          path: ./policy_review.py
+          target: /app/policy_review.py
         - action: rebuild
           path: ./requirements.txt
