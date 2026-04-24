@@ -17,7 +17,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import admin_links
 from collectors import azure_ad, defender, exchange, intune, policies
 from graph_client import GraphClient
-from mappers import nist_800_171
+from mappers import coverage, nist_800_171
 
 logger = logging.getLogger("cmmc.main")
 
@@ -145,6 +145,7 @@ def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any])
         collection_warnings=evidence.get("collection_warnings") or [],
         policies=evidence.get("policies") or {},
         secure_score_url=admin_links.secure_score_url(),
+        coverage=coverage.compute_coverage(compliance_status),
     )
 
 

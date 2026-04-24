@@ -13,7 +13,7 @@ Built for the common small-DIB shape: 3-10 users, macOS endpoints managed by Int
    - **Defender for Endpoint** — vulnerabilities, alerts (past 90 days), Secure Score; falls back to Intune antivirus signals when Defender Graph surfaces are not available.
    - **Exchange Online** — mailbox inventory, directory-audit events scoped to Exchange. (DLP policies require Security & Compliance PowerShell — flagged in the report if missing.)
    - **SharePoint policy library** — enumerates a configured document library and matches filenames against the 13 NIST policy-family controls.
-3. Maps raw evidence to 28 NIST 800-171 r2 controls covering the 13 policy-family `-1` controls (AC-1, AT-1, AU-1, CM-1, IA-1, IR-1, MA-1, MP-1, PE-1, PS-1, RA-1, SC-1, SI-1) plus the technical controls `AC-2/3/6`, `IA-2/4/5`, `AU-2/3/6/12`, `SC-7`, `SI-2/3/4`, and `IR-4`. Each entry carries per-control status (`COMPLIANT` / `PARTIAL` / `NOT_ADDRESSED`), evidence bullets, gaps, and remediation steps.
+3. Scores 28 measured controls (AC-1/2/3/6, AT-1, AU-1/2/3/6/12, CM-1, IA-1/2/4/5, IR-1/4, MA-1, MP-1, PE-1, PS-1, RA-1, SC-1/7, SI-1/2/3/4) each with `COMPLIANT` / `PARTIAL` / `NOT_ADDRESSED` status, evidence bullets, gaps, and remediation steps. The report's Coverage Map section correlates those 28 controls against **all 110 NIST 800-171r2 / CMMC Level 2 requirements** so you see exactly which requirements the tool covers with technical evidence, which are covered only by a policy-document match, and which are out of scope (with the reason, e.g. "physical process", "requires Purview", or a tracked enhancement issue).
 4. Writes three files to `./reports/`:
    - `compliance-report.html` — interactive dashboard.
    - `evidence.json` — raw evidence from all collectors.

@@ -181,6 +181,52 @@
   }
   .gap-title { font-weight: 600; font-size: 14px; }
   .gap-detail { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .coverage-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .coverage-summary .cov-stat {
+    padding: 14px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+  .coverage-summary .cov-stat .num { font-size: 28px; font-weight: 700; }
+  .coverage-summary .cov-stat .lbl { color: var(--muted); font-size: 13px; }
+  .coverage-summary .cov-measured { border-left: 4px solid var(--green); }
+  .coverage-summary .cov-policy { border-left: 4px solid var(--orange); }
+  .coverage-summary .cov-not { border-left: 4px solid var(--red); }
+  .cov-family { margin-bottom: 20px; }
+  .cov-family h3 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin: 12px 0 8px;
+  }
+  table.cov-table { width: 100%; }
+  table.cov-table td, table.cov-table th {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.cov-table th { background: #edf2f7; text-align: left; }
+  .cov-id { font-family: -apple-system, BlinkMacSystemFont, Menlo, monospace; white-space: nowrap; color: var(--muted); }
+  .cov-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .cov-dot.measured { background: var(--green); }
+  .cov-dot.policy_only { background: var(--orange); }
+  .cov-dot.not_measured { background: var(--red); }
+  .cov-note { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
   table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); }
   th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
   th { background: #edf2f7; font-weight: 600; }
@@ -454,6 +500,66 @@
       {% endif %}
     </div>
     {% endfor %}
+  </div>
+  {% endfor %}
+</section>
+
+<section id="coverage">
+  <h2>Coverage Map &mdash; NIST 800-171r2 / CMMC Level 2</h2>
+  <p class="muted">This tool measures {{ coverage.summary.measured + coverage.summary.policy_only }} of the {{ coverage.totalRequirements }} requirements in NIST 800-171r2. The remaining {{ coverage.summary.not_measured }} are flagged below with the reason &mdash; physical process, external system, or tracked on the issue backlog.</p>
+
+  <div class="coverage-summary">
+    <div class="cov-stat cov-measured">
+      <div class="num">{{ coverage.summary.measured }}</div>
+      <div class="lbl">Measured (technical evidence)</div>
+    </div>
+    <div class="cov-stat cov-policy">
+      <div class="num">{{ coverage.summary.policy_only }}</div>
+      <div class="lbl">Policy-only (doc match, not verified)</div>
+    </div>
+    <div class="cov-stat cov-not">
+      <div class="num">{{ coverage.summary.not_measured }}</div>
+      <div class="lbl">Not measured (see notes)</div>
+    </div>
+  </div>
+
+  {% for family in coverage.families %}
+  <div class="cov-family">
+    <h3>{{ family.key }} &mdash; {{ family.title }} ({{ family.requirements | length }})</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in family.requirements %}
+        <tr>
+          <td class="cov-id">{{ req.id }}</td>
+          <td>
+            <strong>{{ req.title }}</strong>
+            <span class="cov-note">{{ req.description }}</span>
+          </td>
+          <td>
+            <span class="cov-dot {{ req.coverageLevel }}"></span>
+            {% if req.coverageLevel == 'measured' %}Measured{% elif req.coverageLevel == 'policy_only' %}Policy-only{% else %}Not measured{% endif %}
+            {% if req.effectiveStatus %}
+              <br><span style="font-size: 11px; color: var(--muted);">best status: {{ req.effectiveStatus.replace('_', ' ') }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if req.mapping %}
+              {% for m in req.mapping %}<code>{{ m.controlId }}</code>{% if not loop.last %}, {% endif %}{% endfor %}
+            {% endif %}
+            {% if req.note %}<span class="cov-note">{{ req.note }}</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
   {% endfor %}
 </section>

@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 
 import admin_links  # noqa: E402
 import main  # noqa: E402
-from mappers import nist_800_171  # noqa: E402
+from mappers import coverage, nist_800_171  # noqa: E402
 
 
 FIXED_DATETIME = "2099-04-20T14:30:00+00:00"
@@ -61,6 +61,7 @@ def render() -> Path:
         collection_warnings=evidence.get("collection_warnings") or [],
         policies=evidence.get("policies") or {},
         secure_score_url=admin_links.secure_score_url(),
+        coverage=coverage.compute_coverage(compliance),
     )
     output_dir = ROOT / "reports"
     output_dir.mkdir(exist_ok=True)

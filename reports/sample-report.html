@@ -181,6 +181,52 @@
   }
   .gap-title { font-weight: 600; font-size: 14px; }
   .gap-detail { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .coverage-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .coverage-summary .cov-stat {
+    padding: 14px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+  .coverage-summary .cov-stat .num { font-size: 28px; font-weight: 700; }
+  .coverage-summary .cov-stat .lbl { color: var(--muted); font-size: 13px; }
+  .coverage-summary .cov-measured { border-left: 4px solid var(--green); }
+  .coverage-summary .cov-policy { border-left: 4px solid var(--orange); }
+  .coverage-summary .cov-not { border-left: 4px solid var(--red); }
+  .cov-family { margin-bottom: 20px; }
+  .cov-family h3 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin: 12px 0 8px;
+  }
+  table.cov-table { width: 100%; }
+  table.cov-table td, table.cov-table th {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.cov-table th { background: #edf2f7; text-align: left; }
+  .cov-id { font-family: -apple-system, BlinkMacSystemFont, Menlo, monospace; white-space: nowrap; color: var(--muted); }
+  .cov-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .cov-dot.measured { background: var(--green); }
+  .cov-dot.policy_only { background: var(--orange); }
+  .cov-dot.not_measured { background: var(--red); }
+  .cov-note { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
   table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); }
   th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
   th { background: #edf2f7; font-weight: 600; }
@@ -970,6 +1016,1606 @@
 <li>Draft a 1–2 page Risk Assessment Policy.</li><li>Publish to the SharePoint policies library used by this tool.</li><li>Require annual review and executive sign-off.</li>        </ol>
       </div>
     </div>
+  </div>
+</section>
+
+<section id="coverage">
+  <h2>Coverage Map &mdash; NIST 800-171r2 / CMMC Level 2</h2>
+  <p class="muted">This tool measures 49 of the 110 requirements in NIST 800-171r2. The remaining 61 are flagged below with the reason &mdash; physical process, external system, or tracked on the issue backlog.</p>
+
+  <div class="coverage-summary">
+    <div class="cov-stat cov-measured">
+      <div class="num">36</div>
+      <div class="lbl">Measured (technical evidence)</div>
+    </div>
+    <div class="cov-stat cov-policy">
+      <div class="num">13</div>
+      <div class="lbl">Policy-only (doc match, not verified)</div>
+    </div>
+    <div class="cov-stat cov-not">
+      <div class="num">61</div>
+      <div class="lbl">Not measured (see notes)</div>
+    </div>
+  </div>
+
+  <div class="cov-family">
+    <h3>3.1 &mdash; Access Control (22)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.1.1</td>
+          <td>
+            <strong>Limit system access to authorized users</strong>
+            <span class="cov-note">Limit system access to authorized users, processes acting on behalf of authorized users, and devices.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-1</code>, <code>AC-2</code>, <code>AC-3</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.2</td>
+          <td>
+            <strong>Limit system access to permitted functions</strong>
+            <span class="cov-note">Limit system access to the types of transactions and functions that authorized users are permitted to execute.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-3</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.3</td>
+          <td>
+            <strong>Control the flow of CUI</strong>
+            <span class="cov-note">Control the flow of CUI in accordance with approved authorizations.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Requires Microsoft Purview information protection labels and DLP policies; not exposed through Graph v1.0.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.4</td>
+          <td>
+            <strong>Separate duties of individuals</strong>
+            <span class="cov-note">Separate the duties of individuals to reduce the risk of malevolent activity without collusion.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-6</code><span class="cov-note">Partial: we count role concentration. Formal duty separation is a policy/process judgment call.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.5</td>
+          <td>
+            <strong>Employ least privilege</strong>
+            <span class="cov-note">Employ the principle of least privilege, including for specific security functions and privileged accounts.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-6</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.6</td>
+          <td>
+            <strong>Use non-privileged accounts for non-security functions</strong>
+            <span class="cov-note">Use non-privileged accounts or roles when accessing non-security functions.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-6</code><span class="cov-note">Signal inferred from PIM activation patterns; user-behavior verification still manual.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.7</td>
+          <td>
+            <strong>Prevent non-privileged execution of privileged functions</strong>
+            <span class="cov-note">Prevent non-privileged users from executing privileged functions and capture the execution of such functions in audit logs.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-6</code>, <code>AU-2</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.8</td>
+          <td>
+            <strong>Limit unsuccessful logon attempts</strong>
+            <span class="cov-note">Limit unsuccessful logon attempts.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Not measured. Ticket #4 (AC-7 failed-auth analysis) will close this via /auditLogs/signIns.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.9</td>
+          <td>
+            <strong>Provide privacy and security notices</strong>
+            <span class="cov-note">Provide privacy and security notices consistent with applicable CUI rules.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Requires verifying sign-in banner/terms of use policy content; outside the collector&#39;s scope.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.10</td>
+          <td>
+            <strong>Session lock with pattern-hiding displays</strong>
+            <span class="cov-note">Use session lock with pattern-hiding displays to prevent access and viewing of data after a period of inactivity.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Depends on endpoint OS configuration (Intune config profile). Ticket #7 (Intune config profiles) will cover this.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.11</td>
+          <td>
+            <strong>Terminate user sessions after defined condition</strong>
+            <span class="cov-note">Terminate (automatically) a user session after a defined condition.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Depends on CA sign-in frequency and token lifetime policies; not currently parsed from CA policies.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.12</td>
+          <td>
+            <strong>Monitor and control remote access</strong>
+            <span class="cov-note">Monitor and control remote access sessions.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-3</code><span class="cov-note">Partial: enforced CA policies are the primary remote-access gate.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.13</td>
+          <td>
+            <strong>Cryptographic mechanisms for remote access</strong>
+            <span class="cov-note">Employ cryptographic mechanisms to protect the confidentiality of remote access sessions.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Microsoft 365 uses TLS by default; verification requires confirming no legacy protocols are enabled (Exchange, SharePoint).</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.14</td>
+          <td>
+            <strong>Route remote access via managed access control points</strong>
+            <span class="cov-note">Route remote access via managed access control points.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-3</code><span class="cov-note">Partial: CA enforces Entra as the managed control point.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.15</td>
+          <td>
+            <strong>Authorize remote execution of privileged commands</strong>
+            <span class="cov-note">Authorize remote execution of privileged commands and remote access to security-relevant information.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-6</code><span class="cov-note">Partial: PIM activation provides authorization signal.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.16</td>
+          <td>
+            <strong>Authorize wireless access</strong>
+            <span class="cov-note">Authorize wireless access prior to allowing such connections.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Wireless authorization is an infrastructure control (802.1X, RADIUS) not visible to Graph.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.17</td>
+          <td>
+            <strong>Protect wireless access with authentication and encryption</strong>
+            <span class="cov-note">Protect wireless access using authentication and encryption.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Infrastructure control; not visible to Graph. Policy-only via MP-1.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.18</td>
+          <td>
+            <strong>Control mobile device connection</strong>
+            <span class="cov-note">Control connection of mobile devices.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Intune MDM controls this; mobile compliance policies exist but the OS filter excludes mobile today. Ticket #8 (multi-OS filter) will expose this.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.19</td>
+          <td>
+            <strong>Encrypt CUI on mobile devices</strong>
+            <span class="cov-note">Encrypt CUI on mobile devices and mobile computing platforms.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Mobile compliance policies enforce this via Intune; see ticket #8.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.20</td>
+          <td>
+            <strong>Verify and control connections to external systems</strong>
+            <span class="cov-note">Verify and control/limit connections to and use of external systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">External sharing in SharePoint/OneDrive. Ticket #6 (external sharing posture) will cover this.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.21</td>
+          <td>
+            <strong>Limit portable storage devices on external systems</strong>
+            <span class="cov-note">Limit use of organizational portable storage devices on external systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Intune device restriction profiles; covered when ticket #7 (Intune config profiles) lands.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.1.22</td>
+          <td>
+            <strong>Control CUI on publicly accessible systems</strong>
+            <span class="cov-note">Control CUI posted or processed on publicly accessible systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Requires content classification (Purview labels) and publishing-site governance; not in Graph.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.2 &mdash; Awareness and Training (3)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.2.1</td>
+          <td>
+            <strong>User security awareness</strong>
+            <span class="cov-note">Ensure that managers, systems administrators, and users of organizational systems are made aware of the security risks associated with their activities.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>AT-1</code><span class="cov-note">Covered via awareness training policy document only; actual completion tracking not collected.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.2.2</td>
+          <td>
+            <strong>Personnel training on assigned duties</strong>
+            <span class="cov-note">Ensure that personnel are trained to carry out their assigned information security-related duties and responsibilities.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>AT-1</code><span class="cov-note">Policy doc only; completion tracking would require Attack Simulation Training integration.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.2.3</td>
+          <td>
+            <strong>Insider threat awareness training</strong>
+            <span class="cov-note">Provide security awareness training on recognizing and reporting potential indicators of insider threat.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>AT-1</code><span class="cov-note">Policy doc only.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.3 &mdash; Audit and Accountability (9)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.3.1</td>
+          <td>
+            <strong>Create and retain system audit logs</strong>
+            <span class="cov-note">Create and retain system audit logs and records to enable monitoring, analysis, investigation, and reporting of unlawful or unauthorized system activity.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AU-2</code>, <code>AU-12</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.3.2</td>
+          <td>
+            <strong>Trace actions of individual users</strong>
+            <span class="cov-note">Ensure that the actions of individual system users can be uniquely traced.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AU-2</code>, <code>AU-3</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.3.3</td>
+          <td>
+            <strong>Review and update logged events</strong>
+            <span class="cov-note">Review and update logged events.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>AU-6</code><span class="cov-note">Partial: review cadence is a documented process, not an automatable signal.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.3.4</td>
+          <td>
+            <strong>Alert on audit logging process failure</strong>
+            <span class="cov-note">Alert in the event of an audit logging process failure.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Requires Sentinel or Log Analytics alert configuration; not visible to Graph.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.3.5</td>
+          <td>
+            <strong>Correlate audit review, analysis, and reporting</strong>
+            <span class="cov-note">Correlate audit record review, analysis, and reporting processes.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>AU-6</code><span class="cov-note">Policy-level; tool surfaces data for review.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.3.6</td>
+          <td>
+            <strong>Audit record reduction and report generation</strong>
+            <span class="cov-note">Provide audit record reduction and report generation to support on-demand analysis.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>AU-6</code><span class="cov-note">Graph audit APIs support on-demand query; report generation is manual.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.3.7</td>
+          <td>
+            <strong>System clock synchronization</strong>
+            <span class="cov-note">Provide a system capability that compares and synchronizes internal system clocks.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Microsoft 365 tenants sync to Microsoft time service by default; not an inspectable signal.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.3.8</td>
+          <td>
+            <strong>Protect audit information</strong>
+            <span class="cov-note">Protect audit information and audit logging tools from unauthorized access, modification, and deletion.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Entra unified audit log is immutable by platform design; verification requires attestation.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.3.9</td>
+          <td>
+            <strong>Limit audit management</strong>
+            <span class="cov-note">Limit management of audit logging functionality to a subset of privileged users.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-6</code><span class="cov-note">Partial: privileged role scope is visible; audit-specific scoping requires PIM role review.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.4 &mdash; Configuration Management (9)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.4.1</td>
+          <td>
+            <strong>Baseline configurations and inventories</strong>
+            <span class="cov-note">Establish and maintain baseline configurations and inventories of organizational systems throughout the respective system development life cycles.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>CM-1</code><span class="cov-note">Policy doc only. Ticket #7 (Intune config profiles) will add baseline-enforcement evidence.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.4.2</td>
+          <td>
+            <strong>Security configuration settings</strong>
+            <span class="cov-note">Establish and enforce security configuration settings for information technology products employed in organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Intune configuration profiles; ticket #7 will close this.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.4.3</td>
+          <td>
+            <strong>Track and approve changes</strong>
+            <span class="cov-note">Track, review, approve or disapprove, and log changes to organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Change management process; not observable via Graph.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.4.4</td>
+          <td>
+            <strong>Security impact analysis of changes</strong>
+            <span class="cov-note">Analyze the security impact of changes prior to implementation.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Process control; requires CCB documentation.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.4.5</td>
+          <td>
+            <strong>Access restrictions for changes</strong>
+            <span class="cov-note">Define, document, approve, and enforce physical and logical access restrictions associated with changes to organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Policy/process control.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.4.6</td>
+          <td>
+            <strong>Least functionality</strong>
+            <span class="cov-note">Employ the principle of least functionality by configuring organizational systems to provide only essential capabilities.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Intune configuration profiles; ticket #7 will cover disabled-feature enforcement.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.4.7</td>
+          <td>
+            <strong>Restrict nonessential programs and services</strong>
+            <span class="cov-note">Restrict, disable, or prevent the use of nonessential programs, functions, ports, protocols, and services.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Endpoint configuration via Intune; ticket #7.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.4.8</td>
+          <td>
+            <strong>Application allowlisting / denylisting</strong>
+            <span class="cov-note">Apply deny-by-exception (blacklisting) policy to prevent the use of unauthorized software or deny-all, permit-by-exception (whitelisting) policy to allow the execution of authorized software.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Intune app protection / Endpoint Security policies; ticket #7.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.4.9</td>
+          <td>
+            <strong>Control user-installed software</strong>
+            <span class="cov-note">Control and monitor user-installed software.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Intune app protection and compliance; ticket #7 + ticket #8 together.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.5 &mdash; Identification and Authentication (11)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.5.1</td>
+          <td>
+            <strong>Identify users, processes, and devices</strong>
+            <span class="cov-note">Identify system users, processes acting on behalf of users, and devices.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>IA-1</code>, <code>IA-2</code>, <code>IA-4</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.2</td>
+          <td>
+            <strong>Authenticate identities</strong>
+            <span class="cov-note">Authenticate (or verify) the identities of users, processes, or devices, as a prerequisite to allowing access to organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>IA-1</code>, <code>IA-2</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.3</td>
+          <td>
+            <strong>MFA for privileged and network access</strong>
+            <span class="cov-note">Use multifactor authentication for local and network access to privileged accounts and for network access to non-privileged accounts.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>IA-2</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.4</td>
+          <td>
+            <strong>Replay-resistant authentication</strong>
+            <span class="cov-note">Employ replay-resistant authentication mechanisms for network access to privileged and non-privileged accounts.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Entra&#39;s default auth protocols (OAuth 2.0 / OpenID Connect) are replay-resistant. Verification is architectural.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.5</td>
+          <td>
+            <strong>Prevent reuse of identifiers</strong>
+            <span class="cov-note">Prevent reuse of identifiers for a defined period.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>IA-4</code><span class="cov-note">Partial: UPN uniqueness verifiable; deletion retention is Entra platform default.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.6</td>
+          <td>
+            <strong>Disable identifiers after inactivity</strong>
+            <span class="cov-note">Disable identifiers after a defined period of inactivity.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>AC-2</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.7</td>
+          <td>
+            <strong>Password complexity</strong>
+            <span class="cov-note">Enforce a minimum password complexity and change of characters when new passwords are created.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>IA-5</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.8</td>
+          <td>
+            <strong>Prohibit password reuse</strong>
+            <span class="cov-note">Prohibit password reuse for a specified number of generations.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>IA-5</code><span class="cov-note">Entra enforces a platform default of 24-generation history.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.9</td>
+          <td>
+            <strong>Temporary password use</strong>
+            <span class="cov-note">Allow temporary password use for system logons with an immediate change to a permanent password.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Entra supports temporary access passes; feature use is not currently inspected.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.10</td>
+          <td>
+            <strong>Cryptographically-protected passwords</strong>
+            <span class="cov-note">Store and transmit only cryptographically-protected passwords.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Entra platform default; no user-facing control.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.5.11</td>
+          <td>
+            <strong>Obscure authentication feedback</strong>
+            <span class="cov-note">Obscure feedback of authentication information.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Entra platform default; no user-facing control.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.6 &mdash; Incident Response (3)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.6.1</td>
+          <td>
+            <strong>Incident-handling capability</strong>
+            <span class="cov-note">Establish an operational incident-handling capability for organizational systems that includes preparation, detection, analysis, containment, recovery, and user response activities.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>IR-1</code>, <code>IR-4</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.6.2</td>
+          <td>
+            <strong>Track, document, and report incidents</strong>
+            <span class="cov-note">Track, document, and report incidents to designated officials and/or authorities both internal and external to the organization.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>IR-4</code><span class="cov-note">Partial: tooling signal (Defender alerts); reporting process requires documentation.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.6.3</td>
+          <td>
+            <strong>Test incident response capability</strong>
+            <span class="cov-note">Test the organizational incident response capability.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Tabletop-exercise evidence is external to the tenant; tracked via IR-1 policy doc.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.7 &mdash; Maintenance (6)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.7.1</td>
+          <td>
+            <strong>Perform system maintenance</strong>
+            <span class="cov-note">Perform maintenance on organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: NOT ADDRESSED</span>
+          </td>
+          <td>
+<code>MA-1</code><span class="cov-note">Policy doc only.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.7.2</td>
+          <td>
+            <strong>Control maintenance tools and personnel</strong>
+            <span class="cov-note">Provide controls on the tools, techniques, mechanisms, and personnel used to conduct system maintenance.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: NOT ADDRESSED</span>
+          </td>
+          <td>
+<code>MA-1</code><span class="cov-note">Policy doc only.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.7.3</td>
+          <td>
+            <strong>Sanitize equipment before off-site maintenance</strong>
+            <span class="cov-note">Ensure equipment removed for off-site maintenance is sanitized of any CUI.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Physical process; not observable.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.7.4</td>
+          <td>
+            <strong>Check media for malicious code</strong>
+            <span class="cov-note">Check media containing diagnostic and test programs for malicious code before the media are used in organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Endpoint AV scan policy; SI-3 partially signals this.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.7.5</td>
+          <td>
+            <strong>MFA for nonlocal maintenance</strong>
+            <span class="cov-note">Require multifactor authentication to establish nonlocal maintenance sessions via external network connections and terminate such connections when nonlocal maintenance is complete.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>IA-2</code><span class="cov-note">Partial: overall MFA enforcement is visible; maintenance-specific scope is policy-level.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.7.6</td>
+          <td>
+            <strong>Supervise unauthorized maintenance personnel</strong>
+            <span class="cov-note">Supervise the maintenance activities of maintenance personnel without required access authorization.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Physical process; not observable.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.8 &mdash; Media Protection (9)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.8.1</td>
+          <td>
+            <strong>Protect system media containing CUI</strong>
+            <span class="cov-note">Protect (i.e., physically control and securely store) system media containing CUI, both paper and digital.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>MP-1</code><span class="cov-note">Policy doc only.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.8.2</td>
+          <td>
+            <strong>Limit access to CUI media</strong>
+            <span class="cov-note">Limit access to CUI on system media to authorized users.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>MP-1</code><span class="cov-note">Policy doc only; file-level ACLs require Purview labels to observe.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.8.3</td>
+          <td>
+            <strong>Sanitize or destroy media before disposal</strong>
+            <span class="cov-note">Sanitize or destroy system media containing CUI before disposal or release for reuse.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Physical process; not observable.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.8.4</td>
+          <td>
+            <strong>Mark media with CUI markings</strong>
+            <span class="cov-note">Mark media with necessary CUI markings and distribution limitations.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Requires Purview sensitivity labels with marking.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.8.5</td>
+          <td>
+            <strong>Control access during media transport</strong>
+            <span class="cov-note">Control access to media containing CUI and maintain accountability for media during transport outside of controlled areas.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Physical process.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.8.6</td>
+          <td>
+            <strong>Encrypt CUI on digital media in transport</strong>
+            <span class="cov-note">Implement cryptographic mechanisms to protect the confidentiality of CUI stored on digital media during transport unless otherwise protected by alternative physical safeguards.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Intune FileVault / BitLocker policies required; ticket #7.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.8.7</td>
+          <td>
+            <strong>Control removable media use</strong>
+            <span class="cov-note">Control the use of removable media on system components.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Intune device restriction profiles; ticket #7.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.8.8</td>
+          <td>
+            <strong>Prohibit unowned portable storage</strong>
+            <span class="cov-note">Prohibit the use of portable storage devices when such devices have no identifiable owner.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Policy-level control; enforcement via Intune profiles.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.8.9</td>
+          <td>
+            <strong>Protect backup CUI</strong>
+            <span class="cov-note">Protect the confidentiality of backup CUI at storage locations.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">M365 backups are Microsoft-operated with encryption at rest; customer-managed backups require separate inspection.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.9 &mdash; Personnel Security (2)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.9.1</td>
+          <td>
+            <strong>Screen personnel before access</strong>
+            <span class="cov-note">Screen individuals prior to authorizing access to organizational systems containing CUI.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: NOT ADDRESSED</span>
+          </td>
+          <td>
+<code>PS-1</code><span class="cov-note">Policy doc only.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.9.2</td>
+          <td>
+            <strong>Protect systems during personnel actions</strong>
+            <span class="cov-note">Ensure that organizational systems containing CUI are protected during and after personnel actions such as terminations and transfers.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>PS-1</code>, <code>AC-2</code><span class="cov-note">AC-2 flags stale accounts; full offboarding process is policy/procedure.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.10 &mdash; Physical Protection (6)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.10.1</td>
+          <td>
+            <strong>Limit physical access</strong>
+            <span class="cov-note">Limit physical access to organizational systems, equipment, and the respective operating environments to authorized individuals.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: NOT ADDRESSED</span>
+          </td>
+          <td>
+<code>PE-1</code><span class="cov-note">Policy doc only.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.10.2</td>
+          <td>
+            <strong>Protect and monitor physical facility</strong>
+            <span class="cov-note">Protect and monitor the physical facility and support infrastructure for organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: NOT ADDRESSED</span>
+          </td>
+          <td>
+<code>PE-1</code><span class="cov-note">Policy doc only.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.10.3</td>
+          <td>
+            <strong>Escort visitors</strong>
+            <span class="cov-note">Escort visitors and monitor visitor activity.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Physical process.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.10.4</td>
+          <td>
+            <strong>Maintain audit logs of physical access</strong>
+            <span class="cov-note">Maintain audit logs of physical access.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Physical access control system; not observable via Graph.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.10.5</td>
+          <td>
+            <strong>Control physical access devices</strong>
+            <span class="cov-note">Control and manage physical access devices.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Physical process.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.10.6</td>
+          <td>
+            <strong>Safeguarding at alternate work sites</strong>
+            <span class="cov-note">Enforce safeguarding measures for CUI at alternate work sites.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Policy-level; enforcement via MDM and CA conditional-access.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.11 &mdash; Risk Assessment (3)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.11.1</td>
+          <td>
+            <strong>Periodic risk assessments</strong>
+            <span class="cov-note">Periodically assess the risk to organizational operations, organizational assets, and individuals, resulting from the operation of organizational systems and the associated processing, storage, or transmission of CUI.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: NOT ADDRESSED</span>
+          </td>
+          <td>
+<code>RA-1</code><span class="cov-note">Policy doc only; assessment reports are external artifacts.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.11.2</td>
+          <td>
+            <strong>Scan for vulnerabilities</strong>
+            <span class="cov-note">Scan for vulnerabilities in organizational systems and applications periodically and when new vulnerabilities affecting those systems and applications are identified.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Defender for Endpoint TVM; requires the Defender API (see Defender vulns warning).</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.11.3</td>
+          <td>
+            <strong>Remediate vulnerabilities per risk assessment</strong>
+            <span class="cov-note">Remediate vulnerabilities in accordance with risk assessments.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>SI-2</code><span class="cov-note">Intune compliance / update status partial signal; full vuln tracking needs Defender TVM.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.12 &mdash; Security Assessment (4)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.12.1</td>
+          <td>
+            <strong>Periodic control assessments</strong>
+            <span class="cov-note">Periodically assess the security controls in organizational systems to determine if the controls are effective in their application.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">This tool *is* one such assessment; results are not (yet) persisted historically. Ticket #9 (history) will provide evidence.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.12.2</td>
+          <td>
+            <strong>Plans of action (POA&amp;M)</strong>
+            <span class="cov-note">Develop and implement plans of action designed to correct deficiencies and reduce or eliminate vulnerabilities in organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Remediation backlog in this tool is analogous but not an OSCAL POA&amp;M. Out of current scope.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.12.3</td>
+          <td>
+            <strong>Continuous monitoring</strong>
+            <span class="cov-note">Monitor security controls on an ongoing basis to ensure the continued effectiveness of the controls.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Ticket #10 (scheduled runs + alerts) enables this operationally.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.12.4</td>
+          <td>
+            <strong>System security plan (SSP)</strong>
+            <span class="cov-note">Develop, document, and periodically update system security plans that describe system boundaries, system environments of operation, how security requirements are implemented, and the relationships with or connections to other systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">SSP is an external document; not generated by this tool.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.13 &mdash; System and Communications Protection (16)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.13.1</td>
+          <td>
+            <strong>Monitor and control boundary communications</strong>
+            <span class="cov-note">Monitor, control, and protect communications at the external boundaries and key internal boundaries of organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>SC-1</code>, <code>SC-7</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.2</td>
+          <td>
+            <strong>Architectural designs for information security</strong>
+            <span class="cov-note">Employ architectural designs, software development techniques, and systems engineering principles that promote effective information security within organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot policy_only"></span>
+Policy-only              <br><span style="font-size: 11px; color: var(--muted);">best status: NOT ADDRESSED</span>
+          </td>
+          <td>
+<code>SC-1</code><span class="cov-note">Policy doc only.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.3</td>
+          <td>
+            <strong>Separate user and system management functions</strong>
+            <span class="cov-note">Separate user functionality from system management functionality.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>AC-6</code><span class="cov-note">Partial: admin/user role separation visible; functional isolation is architectural.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.4</td>
+          <td>
+            <strong>Prevent unauthorized transfer via shared resources</strong>
+            <span class="cov-note">Prevent unauthorized and unintended information transfer via shared system resources.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Microsoft 365 tenant isolation is Microsoft-operated; attestation-based.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.5</td>
+          <td>
+            <strong>Subnetworks for publicly accessible components</strong>
+            <span class="cov-note">Implement subnetworks for publicly accessible system components that are physically or logically separated from internal networks.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">N/A for pure SaaS tenants; architectural for hybrid deployments.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.6</td>
+          <td>
+            <strong>Deny network traffic by default</strong>
+            <span class="cov-note">Deny network communications traffic by default and allow network communications traffic by exception.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>SC-7</code><span class="cov-note">Partial: CA policies with block grant control observable; network-layer firewall is separate.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.7</td>
+          <td>
+            <strong>Prevent split tunneling</strong>
+            <span class="cov-note">Prevent remote devices from simultaneously establishing non-remote connections with organizational systems and communicating via some other connection to resources in external networks.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">VPN / endpoint policy; ticket #7 (Intune config profiles) will surface if configured.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.8</td>
+          <td>
+            <strong>Encrypt CUI in transit</strong>
+            <span class="cov-note">Implement cryptographic mechanisms to prevent unauthorized disclosure of CUI during transmission unless otherwise protected by alternative physical safeguards.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Microsoft 365 uses TLS 1.2+ by default; verification requires confirming no legacy protocols enabled. Ticket #5 (email security) partially covers.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.9</td>
+          <td>
+            <strong>Terminate sessions after inactivity</strong>
+            <span class="cov-note">Terminate network connections associated with communications sessions at the end of the sessions or after a defined period of inactivity.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">CA sign-in frequency and session controls; not currently parsed from CA policies.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.10</td>
+          <td>
+            <strong>Manage cryptographic keys</strong>
+            <span class="cov-note">Establish and manage cryptographic keys for cryptography employed in organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Microsoft-managed keys for M365; customer-managed via Customer Key is separate.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.11</td>
+          <td>
+            <strong>FIPS-validated cryptography</strong>
+            <span class="cov-note">Employ FIPS-validated cryptography when used to protect the confidentiality of CUI.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">GCC-High uses FIPS 140-2 validated modules by platform design; attestation-based.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.12</td>
+          <td>
+            <strong>Prohibit remote collaborative computing activation</strong>
+            <span class="cov-note">Prohibit remote activation of collaborative computing devices and provide indication of devices in use to users present at the device.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Teams / camera-access policies on the endpoint; ticket #7.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.13</td>
+          <td>
+            <strong>Control mobile code</strong>
+            <span class="cov-note">Control and monitor the use of mobile code.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Browser security policies; endpoint Intune config.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.14</td>
+          <td>
+            <strong>Control VoIP</strong>
+            <span class="cov-note">Control and monitor the use of Voice over Internet Protocol (VoIP) technologies.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Teams governance; separate scope.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.15</td>
+          <td>
+            <strong>Protect communications session authenticity</strong>
+            <span class="cov-note">Protect the authenticity of communications sessions.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">TLS is platform default; attestation-based.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.13.16</td>
+          <td>
+            <strong>Protect CUI at rest</strong>
+            <span class="cov-note">Protect the confidentiality of CUI at rest.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">M365 default encryption-at-rest; Purview labels provide CUI-specific protection. Ticket #7 (FileVault/BitLocker via Intune) also contributes.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cov-family">
+    <h3>3.14 &mdash; System and Information Integrity (7)</h3>
+    <table class="cov-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">ID</th>
+          <th style="width: 40%;">Requirement</th>
+          <th>Coverage</th>
+          <th>Mapping / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cov-id">3.14.1</td>
+          <td>
+            <strong>Identify and correct system flaws</strong>
+            <span class="cov-note">Identify, report, and correct system flaws in a timely manner.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: PARTIAL</span>
+          </td>
+          <td>
+<code>SI-2</code><span class="cov-note">Partial: Intune compliance signals patch state; Defender TVM required for full signal.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.14.2</td>
+          <td>
+            <strong>Malicious code protection</strong>
+            <span class="cov-note">Provide protection from malicious code at designated locations within organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>SI-3</code>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.14.3</td>
+          <td>
+            <strong>Monitor security alerts and advisories</strong>
+            <span class="cov-note">Monitor system security alerts and advisories and take action in response.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>SI-4</code><span class="cov-note">Defender alert count visible; response workflow is process-level.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.14.4</td>
+          <td>
+            <strong>Update malicious code protection</strong>
+            <span class="cov-note">Update malicious code protection mechanisms when new releases are available.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>SI-3</code><span class="cov-note">Intune managedDevices antivirus definition status.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.14.5</td>
+          <td>
+            <strong>Periodic and real-time scans</strong>
+            <span class="cov-note">Perform periodic scans of organizational systems and real-time scans of files from external sources as files are downloaded, opened, or executed.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>SI-3</code><span class="cov-note">Defender real-time protection status via Intune.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.14.6</td>
+          <td>
+            <strong>Monitor traffic for attacks</strong>
+            <span class="cov-note">Monitor organizational systems, including inbound and outbound communications traffic, to detect attacks and indicators of potential attacks.</span>
+          </td>
+          <td>
+            <span class="cov-dot measured"></span>
+Measured              <br><span style="font-size: 11px; color: var(--muted);">best status: COMPLIANT</span>
+          </td>
+          <td>
+<code>SI-4</code><span class="cov-note">Defender alerts are the observable signal.</span>          </td>
+        </tr>
+        <tr>
+          <td class="cov-id">3.14.7</td>
+          <td>
+            <strong>Identify unauthorized use</strong>
+            <span class="cov-note">Identify unauthorized use of organizational systems.</span>
+          </td>
+          <td>
+            <span class="cov-dot not_measured"></span>
+Not measured          </td>
+          <td>
+<span class="cov-note">Requires sign-in log analysis + risky-sign-in detection. Ticket #4 (AC-7 failed auth) + P2 licensing unlocks this.</span>          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
