@@ -257,6 +257,24 @@ def _is_break_glass(user: dict[str, Any], break_glass: set[str]) -> bool:
     return bool(upn) and upn in break_glass
 
 
+def _pim_activators(evidence: dict[str, Any]) -> dict[str, int]:
+    """Return a map of UPN -> count of PIM role activations observed in
+    the sampled audit-log window. The ``Add member to role completed
+    (PIM activation)`` event is the definitive signal — it only fires
+    after the activator satisfied approvals, MFA, and justification.
+    """
+    sample = ((evidence.get("azure_ad") or {}).get("auditLogs") or {}).get("sample") or []
+    counts: dict[str, int] = {}
+    for entry in sample:
+        name = (entry.get("activityDisplayName") or "").lower()
+        if "pim activation" not in name or "completed" not in name:
+            continue
+        upn = entry.get("initiatedBy")
+        if isinstance(upn, str) and "@" in upn:
+            counts[upn] = counts.get(upn, 0) + 1
+    return counts
+
+
 def _suspected_break_glass(user: dict[str, Any]) -> bool:
     """Heuristic: enabled, has a privileged role, has never signed in."""
     if not user.get("accountEnabled"):
@@ -455,35 +473,62 @@ def _map_ac6(evidence: dict[str, Any]) -> dict[str, Any]:
     global_admins = [
         u for u in privileged if "Global Administrator" in (u.get("assignedRoles") or [])
     ]
+    pim_counts = _pim_activators(evidence)
+    pim_users = set(pim_counts.keys())
+    # Classify Global Admins: anyone who appears as a PIM activator in the
+    # sampled window is JIT-managed (the static role snapshot caught them
+    # mid-activation). The rest are standing assignments.
+    jit_admins = [
+        u for u in global_admins
+        if (u.get("userPrincipalName") or "") in pim_users
+    ]
+    standing_admins = [u for u in global_admins if u not in jit_admins]
+
     entry["evidence"] = [
         _evidence("Azure AD", f"{len(privileged)} users hold one or more privileged roles"),
     ]
-    if global_admins:
+    if standing_admins:
         entry["evidence"].append(
             _evidence(
                 "Azure AD",
-                f"{len(global_admins)} Global Administrator(s): {_name_list(global_admins)}",
+                f"{len(standing_admins)} standing Global Administrator(s): {_name_list(standing_admins)}",
+            )
+        )
+    if jit_admins:
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"{len(jit_admins)} Global Admin(s) use PIM just-in-time activation: {_name_list(jit_admins)} — stronger AC-6 posture than standing assignment",
+            )
+        )
+    if pim_counts:
+        total = sum(pim_counts.values())
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"PIM activity: {total} activation(s) by {len(pim_counts)} principal(s) in sampled audit window",
             )
         )
     entry["maturity"] = MATURITY_AUTOMATED
-    if 1 <= len(global_admins) <= 2 and len(privileged) <= max(2, int(len(active) * 0.3) + 1):
+    standing_count = len(standing_admins)
+    if 1 <= standing_count <= 2 and len(privileged) <= max(2, int(len(active) * 0.3) + 1):
         entry["status"] = STATUS_COMPLIANT
         entry["remediation"] = _remediation("None", BUCKET_QUICK, [])
     else:
         entry["status"] = STATUS_PARTIAL
-        if len(global_admins) > 2:
+        if standing_count > 2:
             entry["gaps"].append(
-                f"{len(global_admins)} Global Administrators ({_name_list(global_admins)}) — "
-                "recommend 2 or fewer standing assignments."
+                f"{standing_count} standing Global Administrators ({_name_list(standing_admins)}) — "
+                "recommend 2 or fewer standing assignments (move the rest to PIM-eligible)."
             )
-        if len(global_admins) == 0:
+        if standing_count == 0 and not jit_admins:
             entry["gaps"].append("No Global Administrator detected — verify tenant access.")
         entry["remediation"] = _remediation(
             "2 hours",
             BUCKET_QUICK,
             [
-                "Review privileged role assignments and remove unnecessary grants.",
-                "Assign break-glass accounts and document ownership.",
+                "Move standing Global Admin assignments to PIM-eligible (require activation).",
+                "Document break-glass account ownership and add to exceptions list.",
             ],
         )
     return entry
