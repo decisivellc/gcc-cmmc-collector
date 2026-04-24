@@ -19,6 +19,7 @@ import re
 from typing import Any
 from urllib.parse import unquote, urlparse
 
+import policy_review
 from collectors.base import BaseCollector
 from graph_client import GraphClient
 
@@ -67,6 +68,7 @@ class PoliciesCollector(BaseCollector):
 
         documents = self._list_drive_files(drive["id"])
         matches, unmatched = _match_documents(documents)
+        self._review_documents(drive["id"], documents)
 
         return {
             "available": True,
@@ -109,6 +111,36 @@ class PoliciesCollector(BaseCollector):
                 return drive
         return None
 
+    def _review_documents(
+        self,
+        drive_id: str,
+        documents: list[dict[str, Any]],
+    ) -> None:
+        """Download each doc, score structure, and annotate in place."""
+        for doc in documents:
+            doc_id = doc.get("id")
+            if not doc_id:
+                continue
+            try:
+                raw = self.client.get_bytes(
+                    f"/drives/{drive_id}/items/{doc_id}/content"
+                )
+            except Exception as exc:
+                self._record_warning(
+                    f"/drives/{drive_id}/items/{doc_id}/content",
+                    exc,
+                    paginated=False,
+                )
+                structural = policy_review.score_document(
+                    doc.get("name") or "", None, f"download failed: {exc}"
+                )
+            else:
+                text, err = policy_review.extract_text(doc.get("name") or "", raw)
+                structural = policy_review.score_document(
+                    doc.get("name") or "", text, err
+                )
+            doc["structural"] = structural
+
     def _list_drive_files(self, drive_id: str) -> list[dict[str, Any]]:
         collected: list[dict[str, Any]] = []
         self._walk(drive_id, f"/drives/{drive_id}/root/children", collected, depth=0)
@@ -133,6 +165,7 @@ class PoliciesCollector(BaseCollector):
                 continue
             accumulator.append(
                 {
+                    "id": entry.get("id"),
                     "name": entry.get("name"),
                     "webUrl": entry.get("webUrl"),
                     "size": entry.get("size"),

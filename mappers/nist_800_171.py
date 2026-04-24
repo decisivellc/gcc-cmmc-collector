@@ -1116,6 +1116,21 @@ def _policy_docs_for(evidence: dict[str, Any], control_id: str) -> list[dict[str
     return matches.get(control_id) or []
 
 
+def _best_structural_doc(docs: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Return the document with the highest structural score, or None."""
+    scored = [d for d in docs if (d.get("structural") or {}).get("extracted")]
+    if not scored:
+        return None
+    return max(scored, key=lambda d: d["structural"].get("score", 0))
+
+
+def _structural_passes(structural: dict[str, Any] | None) -> bool:
+    """A doc passes the heuristic if it has >=3 required sections and is substantive."""
+    if not structural or not structural.get("extracted"):
+        return False
+    return structural.get("score", 0) >= 3 and structural.get("substantive", False)
+
+
 def _apply_policy_doc_evidence(
     entry: dict[str, Any],
     evidence: dict[str, Any],
@@ -1131,15 +1146,58 @@ def _apply_policy_doc_evidence(
             f"Matched policy document(s): {names}",
         )
     )
+    best = _best_structural_doc(docs)
+    if best:
+        _append_structural_evidence(entry, best)
     entry["gaps"] = [
         g for g in entry["gaps"]
         if "written" not in g.lower() and "policy document" not in g.lower()
     ]
+    if not _structural_passes((best or {}).get("structural")) and best:
+        entry["gaps"].append(_structural_gap_text(best))
     if entry["status"] != STATUS_COMPLIANT:
         entry["status"] = STATUS_PARTIAL if entry["status"] == STATUS_NOT_ADDRESSED else entry["status"]
     if entry["status"] == STATUS_PARTIAL and entry["gaps"] == []:
         entry["status"] = STATUS_COMPLIANT
         entry["maturity"] = MATURITY_AUTOMATED
+
+
+def _append_structural_evidence(entry: dict[str, Any], doc: dict[str, Any]) -> None:
+    s = doc.get("structural") or {}
+    if not s.get("extracted"):
+        entry["evidence"].append(
+            _evidence(
+                "Policy review",
+                f"{doc.get('name')} — content not readable ({s.get('error', 'unknown')}).",
+                confidence="Low",
+            )
+        )
+        return
+    found = ", ".join(s.get("sectionsFound") or []) or "none"
+    entry["evidence"].append(
+        _evidence(
+            "Policy review",
+            f"{doc.get('name')} — {s.get('score')}/5 required sections "
+            f"(found: {found}; {s.get('wordCount')} words).",
+            confidence="High" if _structural_passes(s) else "Medium",
+        )
+    )
+
+
+def _structural_gap_text(doc: dict[str, Any]) -> str:
+    s = doc.get("structural") or {}
+    missing = s.get("sectionsMissing") or []
+    wc = s.get("wordCount", 0)
+    name = doc.get("name") or "matched document"
+    if not s.get("extracted"):
+        return f"{name}: content could not be read; verify the file is a real policy doc, not a stub."
+    parts = []
+    if missing:
+        parts.append(f"missing sections: {', '.join(missing)}")
+    if not s.get("substantive"):
+        parts.append(f"short (only {wc} words)")
+    detail = "; ".join(parts) or "structural review incomplete"
+    return f"{name}: {detail}. Fill in the missing sections to pass the heuristic check."
 
 
 def _map_policy_only_controls(evidence: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -1157,9 +1215,33 @@ def _map_policy_only_controls(evidence: dict[str, Any]) -> dict[str, dict[str, A
                     f"Matched policy document(s): {names}",
                 )
             )
-            entry["status"] = STATUS_COMPLIANT
-            entry["maturity"] = MATURITY_AUTOMATED
-            entry["remediation"] = _remediation("0 hours", BUCKET_QUICK, [])
+            best = _best_structural_doc(docs)
+            if best:
+                _append_structural_evidence(entry, best)
+            if best and _structural_passes(best.get("structural")):
+                entry["status"] = STATUS_COMPLIANT
+                entry["maturity"] = MATURITY_AUTOMATED
+                entry["remediation"] = _remediation("0 hours", BUCKET_QUICK, [])
+            elif best:
+                entry["status"] = STATUS_PARTIAL
+                entry["maturity"] = MATURITY_MANUAL
+                entry["gaps"].append(_structural_gap_text(best))
+                entry["remediation"] = _remediation(
+                    "2 hours",
+                    BUCKET_QUICK,
+                    [
+                        f"Extend the matched policy to include: {', '.join((best.get('structural') or {}).get('sectionsMissing') or [])}.",
+                        "Require annual review and executive sign-off.",
+                    ],
+                )
+            else:
+                # No extractable doc — fall back to "doc exists" credit.
+                entry["status"] = STATUS_PARTIAL
+                entry["maturity"] = MATURITY_MANUAL
+                entry["gaps"].append(
+                    "Document content could not be reviewed; verify it is a real policy doc."
+                )
+                entry["remediation"] = _remediation("1 hour", BUCKET_QUICK, [])
         else:
             reason = (
                 "No matching policy document found in configured SharePoint library."

@@ -323,49 +323,177 @@
         "name": "Access Control Policy.pdf",
         "webUrl": "https://example",
         "size": 102400,
-        "lastModifiedDateTime": "2025-06-01T00:00:00Z"
+        "lastModifiedDateTime": "2025-06-01T00:00:00Z",
+        "id": "doc-Access Control Policy.pdf",
+        "structural": {
+          "extracted": true,
+          "error": null,
+          "score": 5,
+          "sectionsFound": [
+            "purpose",
+            "scope",
+            "roles",
+            "policy",
+            "review"
+          ],
+          "sectionsMissing": [],
+          "wordCount": 450,
+          "substantive": true
+        }
       },
       {
         "name": "Incident Response Plan.docx",
         "webUrl": "https://example",
         "size": 51200,
-        "lastModifiedDateTime": "2025-06-01T00:00:00Z"
+        "lastModifiedDateTime": "2025-06-01T00:00:00Z",
+        "id": "doc-Incident Response Plan.docx",
+        "structural": {
+          "extracted": true,
+          "error": null,
+          "score": 5,
+          "sectionsFound": [
+            "purpose",
+            "scope",
+            "roles",
+            "policy",
+            "review"
+          ],
+          "sectionsMissing": [],
+          "wordCount": 450,
+          "substantive": true
+        }
       },
       {
         "name": "Security Awareness Training Policy.pdf",
         "webUrl": "https://example",
         "size": 80000,
-        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+        "id": "doc-Security Awareness Training Policy.pdf",
+        "structural": {
+          "extracted": true,
+          "error": null,
+          "score": 5,
+          "sectionsFound": [
+            "purpose",
+            "scope",
+            "roles",
+            "policy",
+            "review"
+          ],
+          "sectionsMissing": [],
+          "wordCount": 450,
+          "substantive": true
+        }
       },
       {
         "name": "Audit and Accountability Policy.pdf",
         "webUrl": "https://example",
         "size": 40000,
-        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+        "id": "doc-Audit and Accountability Policy.pdf",
+        "structural": {
+          "extracted": true,
+          "error": null,
+          "score": 5,
+          "sectionsFound": [
+            "purpose",
+            "scope",
+            "roles",
+            "policy",
+            "review"
+          ],
+          "sectionsMissing": [],
+          "wordCount": 450,
+          "substantive": true
+        }
       },
       {
         "name": "Configuration Management Policy.pdf",
         "webUrl": "https://example",
         "size": 40000,
-        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+        "id": "doc-Configuration Management Policy.pdf",
+        "structural": {
+          "extracted": true,
+          "error": null,
+          "score": 5,
+          "sectionsFound": [
+            "purpose",
+            "scope",
+            "roles",
+            "policy",
+            "review"
+          ],
+          "sectionsMissing": [],
+          "wordCount": 450,
+          "substantive": true
+        }
       },
       {
         "name": "System and Information Integrity Policy.pdf",
         "webUrl": "https://example",
         "size": 40000,
-        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+        "id": "doc-System and Information Integrity Policy.pdf",
+        "structural": {
+          "extracted": true,
+          "error": null,
+          "score": 5,
+          "sectionsFound": [
+            "purpose",
+            "scope",
+            "roles",
+            "policy",
+            "review"
+          ],
+          "sectionsMissing": [],
+          "wordCount": 450,
+          "substantive": true
+        }
       },
       {
         "name": "Media Protection Policy.pdf",
         "webUrl": "https://example",
         "size": 40000,
-        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+        "id": "doc-Media Protection Policy.pdf",
+        "structural": {
+          "extracted": true,
+          "error": null,
+          "score": 5,
+          "sectionsFound": [
+            "purpose",
+            "scope",
+            "roles",
+            "policy",
+            "review"
+          ],
+          "sectionsMissing": [],
+          "wordCount": 450,
+          "substantive": true
+        }
       },
       {
         "name": "Vendor Onboarding Checklist.docx",
         "webUrl": "https://example",
         "size": 20000,
-        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+        "id": "doc-Vendor Onboarding Checklist.docx",
+        "structural": {
+          "extracted": true,
+          "error": null,
+          "score": 5,
+          "sectionsFound": [
+            "purpose",
+            "scope",
+            "roles",
+            "policy",
+            "review"
+          ],
+          "sectionsMissing": [],
+          "wordCount": 450,
+          "substantive": true
+        }
       }
     ],
     "controlMatches": {
@@ -374,7 +502,23 @@
           "name": "Access Control Policy.pdf",
           "webUrl": "https://example",
           "size": 102400,
-          "lastModifiedDateTime": "2025-06-01T00:00:00Z"
+          "lastModifiedDateTime": "2025-06-01T00:00:00Z",
+          "id": "doc-Access Control Policy.pdf",
+          "structural": {
+            "extracted": true,
+            "error": null,
+            "score": 5,
+            "sectionsFound": [
+              "purpose",
+              "scope",
+              "roles",
+              "policy",
+              "review"
+            ],
+            "sectionsMissing": [],
+            "wordCount": 450,
+            "substantive": true
+          }
         }
       ],
       "AT-1": [
@@ -382,7 +526,23 @@
           "name": "Security Awareness Training Policy.pdf",
           "webUrl": "https://example",
           "size": 80000,
-          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+          "id": "doc-Security Awareness Training Policy.pdf",
+          "structural": {
+            "extracted": true,
+            "error": null,
+            "score": 5,
+            "sectionsFound": [
+              "purpose",
+              "scope",
+              "roles",
+              "policy",
+              "review"
+            ],
+            "sectionsMissing": [],
+            "wordCount": 450,
+            "substantive": true
+          }
         }
       ],
       "AU-1": [
@@ -390,7 +550,23 @@
           "name": "Audit and Accountability Policy.pdf",
           "webUrl": "https://example",
           "size": 40000,
-          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+          "id": "doc-Audit and Accountability Policy.pdf",
+          "structural": {
+            "extracted": true,
+            "error": null,
+            "score": 5,
+            "sectionsFound": [
+              "purpose",
+              "scope",
+              "roles",
+              "policy",
+              "review"
+            ],
+            "sectionsMissing": [],
+            "wordCount": 450,
+            "substantive": true
+          }
         }
       ],
       "CM-1": [
@@ -398,7 +574,23 @@
           "name": "Configuration Management Policy.pdf",
           "webUrl": "https://example",
           "size": 40000,
-          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+          "id": "doc-Configuration Management Policy.pdf",
+          "structural": {
+            "extracted": true,
+            "error": null,
+            "score": 5,
+            "sectionsFound": [
+              "purpose",
+              "scope",
+              "roles",
+              "policy",
+              "review"
+            ],
+            "sectionsMissing": [],
+            "wordCount": 450,
+            "substantive": true
+          }
         }
       ],
       "IA-1": [],
@@ -407,7 +599,23 @@
           "name": "Incident Response Plan.docx",
           "webUrl": "https://example",
           "size": 51200,
-          "lastModifiedDateTime": "2025-06-01T00:00:00Z"
+          "lastModifiedDateTime": "2025-06-01T00:00:00Z",
+          "id": "doc-Incident Response Plan.docx",
+          "structural": {
+            "extracted": true,
+            "error": null,
+            "score": 5,
+            "sectionsFound": [
+              "purpose",
+              "scope",
+              "roles",
+              "policy",
+              "review"
+            ],
+            "sectionsMissing": [],
+            "wordCount": 450,
+            "substantive": true
+          }
         }
       ],
       "MA-1": [],
@@ -416,7 +624,23 @@
           "name": "Media Protection Policy.pdf",
           "webUrl": "https://example",
           "size": 40000,
-          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+          "id": "doc-Media Protection Policy.pdf",
+          "structural": {
+            "extracted": true,
+            "error": null,
+            "score": 5,
+            "sectionsFound": [
+              "purpose",
+              "scope",
+              "roles",
+              "policy",
+              "review"
+            ],
+            "sectionsMissing": [],
+            "wordCount": 450,
+            "substantive": true
+          }
         }
       ],
       "PE-1": [],
@@ -428,7 +652,23 @@
           "name": "System and Information Integrity Policy.pdf",
           "webUrl": "https://example",
           "size": 40000,
-          "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+          "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+          "id": "doc-System and Information Integrity Policy.pdf",
+          "structural": {
+            "extracted": true,
+            "error": null,
+            "score": 5,
+            "sectionsFound": [
+              "purpose",
+              "scope",
+              "roles",
+              "policy",
+              "review"
+            ],
+            "sectionsMissing": [],
+            "wordCount": 450,
+            "substantive": true
+          }
         }
       ]
     },
@@ -437,7 +677,23 @@
         "name": "Vendor Onboarding Checklist.docx",
         "webUrl": "https://example",
         "size": 20000,
-        "lastModifiedDateTime": "2025-05-15T00:00:00Z"
+        "lastModifiedDateTime": "2025-05-15T00:00:00Z",
+        "id": "doc-Vendor Onboarding Checklist.docx",
+        "structural": {
+          "extracted": true,
+          "error": null,
+          "score": 5,
+          "sectionsFound": [
+            "purpose",
+            "scope",
+            "roles",
+            "policy",
+            "review"
+          ],
+          "sectionsMissing": [],
+          "wordCount": 450,
+          "substantive": true
+        }
       }
     ],
     "coverage": {

@@ -86,6 +86,12 @@ class GraphClient:
             return {}
         return response.json()
 
+    def get_bytes(self, path: str, params: dict[str, Any] | None = None) -> bytes:
+        """GET a binary resource (file download) and return raw bytes."""
+        url = self._full_url(path)
+        response = self._request_with_retry("GET", url, params=params)
+        return response.content or b""
+
     def get_all(
         self, path: str, params: dict[str, Any] | None = None
     ) -> list[dict[str, Any]]:
