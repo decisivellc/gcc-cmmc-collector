@@ -176,6 +176,63 @@ def _mfa_requiring_policies(policies: list[dict[str, Any]]) -> list[dict[str, An
     ]
 
 
+def _report_only_policies(
+    policies: list[dict[str, Any]],
+    predicate=None,
+) -> list[dict[str, Any]]:
+    """CA policies in ``enabledForReportingButNotEnforced`` state.
+
+    Optional ``predicate`` narrows to policies whose shape would otherwise
+    close a given control (e.g. MFA grant control, block grant control).
+    """
+    filtered = [
+        p for p in policies
+        if p.get("state") == "enabledForReportingButNotEnforced"
+    ]
+    if predicate is None:
+        return filtered
+    return [p for p in filtered if predicate(p)]
+
+
+def _has_mfa_grant(policy: dict[str, Any]) -> bool:
+    return any("mfa" in (c or "").lower() for c in policy.get("grantControls", []) or [])
+
+
+def _has_block_or_compliant_grant(policy: dict[str, Any]) -> bool:
+    return any(
+        "block" in (c or "").lower() or "compliantdevice" in (c or "").lower()
+        for c in policy.get("grantControls", []) or []
+    )
+
+
+def _report_only_evidence_and_gap(
+    entry: dict[str, Any],
+    report_only: list[dict[str, Any]],
+    topic: str,
+) -> None:
+    """Add an evidence line and (if the entry is otherwise compliant) a gap
+    pointing out that some policies matching this topic are sitting in
+    report-only mode and not actually enforcing."""
+    if not report_only:
+        return
+    names = ", ".join(p.get("displayName", "unnamed") for p in report_only[:3])
+    more = f" (+{len(report_only) - 3} more)" if len(report_only) > 3 else ""
+    entry["evidence"].append(
+        _evidence(
+            "Azure AD",
+            f"{len(report_only)} {topic} policies in report-only mode (not enforcing): {names}{more}",
+            confidence="Medium",
+        )
+    )
+    if entry["status"] == STATUS_COMPLIANT:
+        entry["status"] = STATUS_PARTIAL
+    entry["gaps"].append(
+        f"{len(report_only)} {topic} conditional-access policies are in "
+        "report-only mode. Promote to 'enabled' once you've verified "
+        "they don't break legitimate sign-ins."
+    )
+
+
 def _evidence(source: str, detail: str, confidence: str = "High") -> dict[str, str]:
     return {"source": source, "detail": detail, "confidence": confidence}
 
@@ -245,6 +302,11 @@ def _map_ac1(evidence: dict[str, Any]) -> dict[str, Any]:
             ],
         )
     _apply_policy_doc_evidence(entry, evidence, "AC-1")
+    _report_only_evidence_and_gap(
+        entry,
+        _report_only_policies(ca_policies, _has_mfa_grant),
+        topic="MFA",
+    )
     return entry
 
 
@@ -324,6 +386,11 @@ def _map_ac3(evidence: dict[str, Any]) -> dict[str, Any]:
             BUCKET_QUICK,
             ["Create conditional-access policy requiring MFA for all users/apps."],
         )
+    _report_only_evidence_and_gap(
+        entry,
+        _report_only_policies(ca_policies),
+        topic="access-control",
+    )
     return entry
 
 
@@ -406,6 +473,11 @@ def _map_ia2(evidence: dict[str, Any]) -> dict[str, Any]:
             BUCKET_QUICK,
             ["Enable a conditional-access policy that requires MFA for all users."],
         )
+    _report_only_evidence_and_gap(
+        entry,
+        _report_only_policies(_conditional_access(evidence), _has_mfa_grant),
+        topic="MFA",
+    )
     return entry
 
 
@@ -596,11 +668,7 @@ def _map_sc7(evidence: dict[str, Any]) -> dict[str, Any]:
     geo_policies = [
         p
         for p in ca_policies
-        if p.get("state") == "enabled"
-        and any(
-            "block" in (c or "").lower() or "compliantdevice" in (c or "").lower()
-            for c in p.get("grantControls", []) or []
-        )
+        if p.get("state") == "enabled" and _has_block_or_compliant_grant(p)
     ]
     entry["evidence"].append(
         _evidence(
@@ -615,6 +683,11 @@ def _map_sc7(evidence: dict[str, Any]) -> dict[str, Any]:
     else:
         entry["status"] = STATUS_NOT_ADDRESSED
         entry["gaps"].append("No block or device-compliance conditional-access policies found.")
+    _report_only_evidence_and_gap(
+        entry,
+        _report_only_policies(ca_policies, _has_block_or_compliant_grant),
+        topic="boundary",
+    )
     entry["remediation"] = _remediation(
         "1 day",
         BUCKET_MEDIUM,
