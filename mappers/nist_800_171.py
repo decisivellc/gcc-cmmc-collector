@@ -46,6 +46,8 @@ CONTROL_IDS = [
     "AU-6",
     "AU-12",
     "CM-1",
+    "CM-2",
+    "CM-6",
     "IA-1",
     "IA-2",
     "IA-4",
@@ -105,6 +107,8 @@ def map(evidence: dict[str, Any]) -> dict[str, Any]:
         "IR-1": _map_ir1,
         "IR-4": _map_ir4,
         "AT-1": _map_at1,
+        "CM-2": _map_cm2,
+        "CM-6": _map_cm6,
     }
     controls: dict[str, dict[str, Any]] = {}
     for control_id, fn in mappers.items():
@@ -876,6 +880,141 @@ def _map_sc7(evidence: dict[str, Any]) -> dict[str, Any]:
             "Require compliant device for CUI-containing applications.",
         ],
     )
+    return entry
+
+
+def _map_cm2(evidence: dict[str, Any]) -> dict[str, Any]:
+    entry = _base(
+        "Baseline Configuration",
+        "CM",
+        "Establish and maintain baseline configurations for organizational systems.",
+    )
+    profiles_block = (evidence.get("intune") or {}).get("configurationProfiles") or {}
+    items = profiles_block.get("items") or []
+    summary = profiles_block.get("summary") or {}
+    assigned = summary.get("assignedProfiles", 0)
+    platforms = summary.get("platformsCovered") or []
+
+    if not items:
+        entry["status"] = STATUS_NOT_ADDRESSED
+        entry["gaps"].append("No Intune configuration profiles visible via Graph.")
+        entry["remediation"] = _remediation(
+            "1 day",
+            BUCKET_MEDIUM,
+            [
+                "Create a configuration profile per platform (macOS / iOS / Windows) in Intune.",
+                "Assign each to 'All users' or an appropriate group.",
+            ],
+        )
+        return entry
+
+    entry["evidence"].append(
+        _evidence(
+            "Intune",
+            f"{summary.get('totalProfiles', 0)} configuration profile(s) defined; {assigned} assigned.",
+        )
+    )
+    if platforms:
+        entry["evidence"].append(
+            _evidence(
+                "Intune",
+                "Platforms with assigned baseline(s): "
+                + ", ".join(f"{p['platform']} ({p['count']})" for p in platforms),
+            )
+        )
+
+    entry["maturity"] = MATURITY_AUTOMATED
+    if assigned >= 1:
+        entry["status"] = STATUS_PARTIAL
+        entry["gaps"].append(
+            "Baseline is deployed but the *content* of each profile (specific settings) must be reviewed manually against a CIS or DoD STIG benchmark."
+        )
+        entry["remediation"] = _remediation(
+            "2 hours",
+            BUCKET_MEDIUM,
+            [
+                "Review each assigned profile against a published benchmark (CIS or DoD STIG).",
+                "Document the chosen baseline in the Configuration Management Policy.",
+            ],
+        )
+    else:
+        entry["status"] = STATUS_NOT_ADDRESSED
+        entry["gaps"].append(
+            f"{summary.get('totalProfiles', 0)} profile(s) defined but none assigned — baselines are not being enforced."
+        )
+        entry["remediation"] = _remediation(
+            "30 minutes",
+            BUCKET_QUICK,
+            ["Assign each existing configuration profile to the appropriate user or device group."],
+        )
+    return entry
+
+
+def _map_cm6(evidence: dict[str, Any]) -> dict[str, Any]:
+    entry = _base(
+        "Configuration Settings",
+        "CM",
+        "Establish and enforce security configuration settings for IT products.",
+    )
+    profiles_block = (evidence.get("intune") or {}).get("configurationProfiles") or {}
+    items = profiles_block.get("items") or []
+    security_intents = [p for p in items if p.get("source") == "endpointSecurityIntent" and p.get("assigned")]
+    settings_catalog = [p for p in items if p.get("source") == "configurationPolicy" and p.get("assigned")]
+    legacy_security = [
+        p for p in items
+        if p.get("source") == "deviceConfiguration"
+        and p.get("assigned")
+        and any(kw in (p.get("displayName") or "").lower()
+                for kw in ("security", "firewall", "encryption", "bitlocker", "filevault", "antivirus"))
+    ]
+
+    total_security = len(security_intents) + len(settings_catalog) + len(legacy_security)
+
+    if not items:
+        entry["status"] = STATUS_NOT_ADDRESSED
+        entry["gaps"].append("No Intune configuration data available.")
+        entry["remediation"] = _remediation(
+            "1 day",
+            BUCKET_MEDIUM,
+            ["Enable the Intune collector and deploy at least one Endpoint Security profile."],
+        )
+        return entry
+
+    entry["evidence"].append(
+        _evidence(
+            "Intune",
+            f"{len(security_intents)} Endpoint Security intent(s) assigned; "
+            f"{len(settings_catalog)} settings-catalog policy(ies) assigned; "
+            f"{len(legacy_security)} legacy security profile(s) assigned.",
+        )
+    )
+    entry["maturity"] = MATURITY_AUTOMATED
+    if total_security == 0:
+        entry["status"] = STATUS_NOT_ADDRESSED
+        entry["gaps"].append(
+            "No security-focused configuration profiles assigned (antivirus, firewall, disk encryption, etc.)."
+        )
+        entry["remediation"] = _remediation(
+            "1 day",
+            BUCKET_MEDIUM,
+            [
+                "Create Endpoint Security profiles for antivirus, disk encryption, and firewall.",
+                "Assign each to the appropriate device platform group.",
+            ],
+        )
+    else:
+        entry["status"] = STATUS_PARTIAL
+        entry["gaps"].append(
+            "Security profiles are assigned; verify settings align with a published benchmark (CIS / DoD STIG) — not currently parsed from Graph."
+        )
+        entry["remediation"] = _remediation(
+            "2 hours",
+            BUCKET_MEDIUM,
+            [
+                "Cross-check assigned security profiles against CIS or DoD STIG.",
+                "Document deviations and the business rationale in the Configuration Management Policy.",
+            ],
+        )
     return entry
 
 

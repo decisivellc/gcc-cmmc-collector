@@ -23,11 +23,13 @@ class IntuneCollector(BaseCollector):
     def collect(self) -> dict[str, Any]:
         devices = self._collect_devices()
         policies = self._collect_compliance_policies()
+        config_profiles = self._collect_configuration_profiles()
         summary = _summarize_devices(devices)
         per_os = _summarize_by_os(devices)
         return {
             "devices": devices,
             "compliancePolicies": policies,
+            "configurationProfiles": config_profiles,
             "deviceComplianceSummary": summary,
             "deviceComplianceByOs": per_os,
             "osFilter": self.os_filter,
@@ -92,6 +94,107 @@ class IntuneCollector(BaseCollector):
                 }
             )
         return policies
+
+
+    def _get_beta_all(self, path: str) -> list[dict[str, Any]]:
+        """Hit the beta Graph surface for endpoints that aren't in v1.0 on
+        GCC-High (settings-catalog policies and endpoint security intents).
+        Falls back to an empty list and records a warning on failure."""
+        v1_base = getattr(self.client, "graph_base_url", "")
+        if "/v1.0" in v1_base:
+            full_url = v1_base.replace("/v1.0", "/beta").rstrip("/") + path
+        else:
+            # Fake clients in tests or unusual configs: just try the path as-is.
+            full_url = path
+        try:
+            return self.client.get_all(full_url)
+        except Exception as exc:
+            logger.warning("%s: beta GET %s failed: %s", self.name, path, exc)
+            self._record_warning(f"beta:{path}", exc, paginated=True)
+            return []
+
+    def _collect_configuration_profiles(self) -> dict[str, Any]:
+        """Three Graph surfaces carry configuration baselines for Intune:
+        the legacy ``deviceConfigurations`` (v1.0), the settings-catalog
+        ``configurationPolicies`` (beta-only in GCC-High), and endpoint
+        security ``intents`` (beta-only in GCC-High). We merge them into a
+        single list with a ``source`` marker so the report can show where
+        each profile came from."""
+        legacy = self._safe_get_all("/deviceManagement/deviceConfigurations")
+        settings_catalog = self._get_beta_all("/deviceManagement/configurationPolicies")
+        intents = self._get_beta_all("/deviceManagement/intents")
+
+        profiles: list[dict[str, Any]] = []
+        for entry in legacy:
+            profiles.append(_normalize_profile(entry, source="deviceConfiguration"))
+        for entry in settings_catalog:
+            profiles.append(_normalize_profile(entry, source="configurationPolicy"))
+        for entry in intents:
+            profiles.append(_normalize_profile(entry, source="endpointSecurityIntent"))
+
+        for profile in profiles:
+            if not profile.get("id"):
+                continue
+            path = _assignments_path(profile["source"], profile["id"])
+            if path is None:
+                continue
+            if profile["source"] == "deviceConfiguration":
+                assignments = self._safe_get_all(path)
+            else:
+                # Settings catalog and endpoint security intents live under /beta on GCC-High.
+                assignments = self._get_beta_all(path)
+            profile["assignmentCount"] = len(assignments or [])
+            profile["assigned"] = profile["assignmentCount"] > 0
+
+        summary = _summarize_config_profiles(profiles)
+        return {"items": profiles, "summary": summary}
+
+
+def _normalize_profile(entry: dict[str, Any], source: str) -> dict[str, Any]:
+    platforms = entry.get("platforms") or entry.get("platform") or entry.get("platformSupport")
+    if isinstance(platforms, list):
+        platform_list = [p for p in platforms if p]
+    elif isinstance(platforms, str) and platforms:
+        platform_list = [platforms]
+    else:
+        platform_list = []
+    return {
+        "id": entry.get("id"),
+        "displayName": entry.get("displayName") or entry.get("name"),
+        "description": entry.get("description"),
+        "platforms": platform_list,
+        "source": source,
+        "lastModifiedDateTime": entry.get("lastModifiedDateTime"),
+        "createdDateTime": entry.get("createdDateTime"),
+        "assignmentCount": 0,
+        "assigned": False,
+    }
+
+
+def _assignments_path(source: str, profile_id: str) -> str | None:
+    if source == "deviceConfiguration":
+        return f"/deviceManagement/deviceConfigurations/{profile_id}/assignments"
+    if source == "configurationPolicy":
+        return f"/deviceManagement/configurationPolicies/{profile_id}/assignments"
+    if source == "endpointSecurityIntent":
+        return f"/deviceManagement/intents/{profile_id}/assignments"
+    return None
+
+
+def _summarize_config_profiles(profiles: list[dict[str, Any]]) -> dict[str, Any]:
+    assigned = [p for p in profiles if p["assigned"]]
+    per_platform: dict[str, dict[str, int]] = {}
+    for p in assigned:
+        for platform in p["platforms"] or ["unspecified"]:
+            key = platform.lower()
+            bucket = per_platform.setdefault(key, {"platform": platform, "count": 0})
+            bucket["count"] += 1
+    platform_rows = sorted(per_platform.values(), key=lambda r: r["platform"].lower())
+    return {
+        "totalProfiles": len(profiles),
+        "assignedProfiles": len(assigned),
+        "platformsCovered": platform_rows,
+    }
 
 
 def collect(client: GraphClient, os_filter: str | None = None) -> dict[str, Any]:

@@ -166,6 +166,38 @@ def test_intune_respects_explicit_os_filter():
     assert len(evidence["devices"]) == 1
 
 
+def test_intune_collects_configuration_profiles_from_three_surfaces():
+    paginated = {
+        "/deviceManagement/deviceConfigurations": [
+            {"id": "dc-1", "displayName": "FileVault", "platformSupport": "macOS", "lastModifiedDateTime": "2025-01-01T00:00:00Z"},
+        ],
+        "/deviceManagement/deviceConfigurations/dc-1/assignments": [{"id": "a1"}],
+        "/deviceManagement/configurationPolicies": [
+            {"id": "cp-1", "name": "Edge Security", "platforms": "windows10"},
+        ],
+        "/deviceManagement/configurationPolicies/cp-1/assignments": [{"id": "a2"}],
+        "/deviceManagement/intents": [
+            {"id": "int-1", "displayName": "Windows Defender", "platforms": ["windows10"]},
+        ],
+        "/deviceManagement/intents/int-1/assignments": [],
+    }
+    client = FakeClient(routes={}, paginated_routes=paginated)
+    evidence = intune.collect(client)
+    profiles = evidence["configurationProfiles"]["items"]
+    sources = {p["source"] for p in profiles}
+    assert sources == {"deviceConfiguration", "configurationPolicy", "endpointSecurityIntent"}
+    summary = evidence["configurationProfiles"]["summary"]
+    assert summary["totalProfiles"] == 3
+    assert summary["assignedProfiles"] == 2  # the intent has no assignments
+
+
+def test_intune_configuration_profiles_empty_when_nothing_returned():
+    client = FakeClient(routes={}, paginated_routes={})
+    evidence = intune.collect(client)
+    assert evidence["configurationProfiles"]["items"] == []
+    assert evidence["configurationProfiles"]["summary"]["assignedProfiles"] == 0
+
+
 # ----- Defender --------------------------------------------------------
 
 
