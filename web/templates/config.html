@@ -27,6 +27,15 @@
     </div>
   </div>
 
+  <div class="card">
+    <h3>Break-glass accounts</h3>
+    <div class="field">
+      <label for="break_glass_upns">UPNs, one per line</label>
+      <textarea id="break_glass_upns" name="break_glass_upns" rows="3" style="width:100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 4px; font-family: inherit; font-size: 14px;" placeholder="BG_RM@contoso.onmicrosoft.us">{{ (config.exceptions or {}).get('break_glass_upns', []) | join('\n') }}</textarea>
+      <div class="hint">Emergency-access accounts are excepted from MFA-required and inactivity gaps. Best practice: physical token, offline, no standing MFA.</div>
+    </div>
+  </div>
+
   <button type="submit">Save configuration</button>
   <a href="{{ url_for('index') }}" class="btn secondary">Cancel</a>
 </form>

@@ -118,6 +118,9 @@ def create_app() -> Flask:
                 block["enabled"] = request.form.get(f"{name}_enabled") == "on"
             policies = collectors_cfg.setdefault("policies", {})
             policies["site_url"] = (request.form.get("policies_site_url") or "").strip()
+            raw_bg = request.form.get("break_glass_upns") or ""
+            upns = [line.strip() for line in raw_bg.splitlines() if line.strip()]
+            cfg.setdefault("exceptions", {})["break_glass_upns"] = upns
             _save_config(cfg)
             flash("Configuration saved.", "ok")
             return redirect(url_for("config_view"))

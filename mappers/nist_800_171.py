@@ -247,6 +247,28 @@ def _privileged_users(users: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [u for u in users if u.get("assignedRoles")]
 
 
+def _break_glass_upns(evidence: dict[str, Any]) -> set[str]:
+    raw = (evidence.get("exceptions") or {}).get("break_glass_upns") or []
+    return {u.casefold() for u in raw if u}
+
+
+def _is_break_glass(user: dict[str, Any], break_glass: set[str]) -> bool:
+    upn = (user.get("userPrincipalName") or "").casefold()
+    return bool(upn) and upn in break_glass
+
+
+def _suspected_break_glass(user: dict[str, Any]) -> bool:
+    """Heuristic: enabled, has a privileged role, has never signed in."""
+    if not user.get("accountEnabled"):
+        return False
+    if not user.get("assignedRoles"):
+        return False
+    sign_in = user.get("signInActivity") or {}
+    return not sign_in.get("lastSignInDateTime") and not sign_in.get(
+        "lastNonInteractiveSignInDateTime"
+    )
+
+
 def _remediation(
     effort: str,
     bucket: str,
@@ -327,10 +349,12 @@ def _map_ac2(evidence: dict[str, Any]) -> dict[str, Any]:
         "Manage information system accounts: creation, disabling, removal.",
     )
     active = _active_users(evidence)
-    mfa_enabled = [u for u in active if u.get("mfaStatus") == "enabled"]
+    break_glass = _break_glass_upns(evidence)
+    non_bg = [u for u in active if not _is_break_glass(u, break_glass)]
+    mfa_enabled = [u for u in non_bg if u.get("mfaStatus") == "enabled"]
     inactive = [
         u
-        for u in active
+        for u in non_bg
         if isinstance(u.get("lastActiveInDays"), int)
         and u["lastActiveInDays"] > 30
     ]
@@ -338,8 +362,8 @@ def _map_ac2(evidence: dict[str, Any]) -> dict[str, Any]:
     privileged_inactive = _privileged_users(inactive)
 
     entry["evidence"] = [
-        _evidence("Azure AD", f"{len(active)} active users"),
-        _evidence("Azure AD", f"{len(mfa_enabled)}/{len(active)} users with MFA registered"),
+        _evidence("Azure AD", f"{len(non_bg)} active users (excluding break-glass)"),
+        _evidence("Azure AD", f"{len(mfa_enabled)}/{len(non_bg)} users with MFA registered"),
         _evidence("Azure AD", f"{len(inactive)} inactive users (>30 days since sign-in)"),
     ]
     if privileged_inactive:
@@ -351,7 +375,7 @@ def _map_ac2(evidence: dict[str, Any]) -> dict[str, Any]:
             )
         )
     entry["maturity"] = MATURITY_AUTOMATED
-    compliant = not inactive and len(mfa_enabled) == len(active) and active
+    compliant = not inactive and len(mfa_enabled) == len(non_bg) and non_bg
     if compliant:
         entry["status"] = STATUS_COMPLIANT
         entry["remediation"] = _remediation("None", BUCKET_QUICK, [])
@@ -366,8 +390,8 @@ def _map_ac2(evidence: dict[str, Any]) -> dict[str, Any]:
             entry["gaps"].append(
                 f"{len(other_inactive)} other inactive account(s): {_name_list(other_inactive)}"
             )
-        if len(mfa_enabled) < len(active):
-            missing_mfa = [u for u in active if u.get("mfaStatus") != "enabled"]
+        if len(mfa_enabled) < len(non_bg):
+            missing_mfa = [u for u in non_bg if u.get("mfaStatus") != "enabled"]
             entry["gaps"].append(
                 f"{len(missing_mfa)} active user(s) without MFA: {_name_list(missing_mfa)}"
             )
@@ -376,7 +400,7 @@ def _map_ac2(evidence: dict[str, Any]) -> dict[str, Any]:
             steps.append(
                 f"Disable or reassign {len(inactive)} inactive account(s) in Entra admin center."
             )
-        if len(mfa_enabled) < len(active):
+        if len(mfa_enabled) < len(non_bg):
             steps.append("Register MFA for remaining active users.")
         entry["remediation"] = _remediation(
             "30 minutes" if len(steps) <= 1 else "1-2 hours",
@@ -472,8 +496,13 @@ def _map_ia2(evidence: dict[str, Any]) -> dict[str, Any]:
         "Uniquely identify and authenticate users and devices.",
     )
     active = _active_users(evidence)
+    break_glass = _break_glass_upns(evidence)
     mfa_enabled = [u for u in active if u.get("mfaStatus") == "enabled"]
-    mfa_missing = [u for u in active if u.get("mfaStatus") != "enabled"]
+    mfa_missing = [
+        u for u in active
+        if u.get("mfaStatus") != "enabled" and not _is_break_glass(u, break_glass)
+    ]
+    break_glass_users = [u for u in active if _is_break_glass(u, break_glass)]
     privileged_missing = _privileged_users(mfa_missing)
     mfa_policies = _mfa_requiring_policies(_conditional_access(evidence))
     entry["evidence"] = [
@@ -494,8 +523,30 @@ def _map_ia2(evidence: dict[str, Any]) -> dict[str, Any]:
                 confidence="High",
             )
         )
+    if break_glass_users:
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"{len(break_glass_users)} break-glass account(s) excepted per config: {_name_list(break_glass_users)}",
+            )
+        )
+    suspected = [
+        u for u in active
+        if _suspected_break_glass(u) and not _is_break_glass(u, break_glass)
+    ]
+    if suspected:
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"Suspected break-glass account(s) (never-signed-in privileged): {_name_list(suspected)}. "
+                "Add to exceptions.break_glass_upns in config to except from MFA gaps.",
+                confidence="Medium",
+            )
+        )
     entry["maturity"] = MATURITY_AUTOMATED
-    if active and len(mfa_enabled) == len(active) and mfa_policies:
+    non_bg_active = [u for u in active if not _is_break_glass(u, break_glass)]
+    non_bg_mfa_enabled = [u for u in non_bg_active if u.get("mfaStatus") == "enabled"]
+    if non_bg_active and len(non_bg_mfa_enabled) == len(non_bg_active) and mfa_policies:
         entry["status"] = STATUS_COMPLIANT
         entry["remediation"] = _remediation("None", BUCKET_QUICK, [])
     elif mfa_policies:
