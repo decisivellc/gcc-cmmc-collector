@@ -28,6 +28,11 @@
     "exchange": {
       "enabled": true
     },
+    "email_security": {
+      "enabled": true,
+      "domains": [],
+      "comment": "Leave domains empty to auto-discover verified tenant domains (excluding *.onmicrosoft.us). Specify a list to override, e.g. [\"decisivellc.us\"]."
+    },
     "policies": {
       "enabled": true,
       "site_url": "",

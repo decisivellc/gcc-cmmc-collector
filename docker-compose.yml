@@ -47,3 +47,5 @@ services:
           target: /app/policy_review.py
         - action: rebuild
           path: ./requirements.txt
+        - action: rebuild
+          path: ./mappers/nist_800_171_catalog.json

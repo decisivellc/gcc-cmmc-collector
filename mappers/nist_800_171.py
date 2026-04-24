@@ -59,6 +59,7 @@ CONTROL_IDS = [
     "RA-1",
     "SC-1",
     "SC-7",
+    "SC-8",
     "SI-1",
     "SI-2",
     "SI-3",
@@ -97,6 +98,7 @@ def map(evidence: dict[str, Any]) -> dict[str, Any]:
         "AU-6": _map_au6,
         "AU-12": _map_au12,
         "SC-7": _map_sc7,
+        "SC-8": _map_sc8,
         "SI-2": _map_si2,
         "SI-3": _map_si3,
         "SI-4": _map_si4,
@@ -874,6 +876,91 @@ def _map_sc7(evidence: dict[str, Any]) -> dict[str, Any]:
             "Require compliant device for CUI-containing applications.",
         ],
     )
+    return entry
+
+
+def _map_sc8(evidence: dict[str, Any]) -> dict[str, Any]:
+    entry = _base(
+        "Communications Authenticity (SPF / DKIM / DMARC)",
+        "SC",
+        "Protect the authenticity of email communications via sender authentication.",
+    )
+    email_sec = evidence.get("email_security") or {}
+    domains = email_sec.get("domains") or []
+    if not email_sec.get("available") or not domains:
+        entry["status"] = STATUS_NOT_ADDRESSED
+        entry["gaps"].append(
+            "email_security collector disabled or no verified tenant domains."
+        )
+        entry["remediation"] = _remediation(
+            "30 minutes",
+            BUCKET_QUICK,
+            [
+                "Enable the email_security collector in config.json.",
+                "Verify at least one custom domain in Entra.",
+            ],
+        )
+        return entry
+
+    strong = [d for d in domains if d["posture"] == "strong"]
+    weak = [d for d in domains if d["posture"] in ("partial", "weak")]
+    missing = [d for d in domains if d["posture"] == "missing"]
+
+    entry["evidence"].append(
+        _evidence(
+            "DNS",
+            f"{len(strong)}/{len(domains)} tenant domain(s) with strong SPF + DKIM + DMARC (p=quarantine or reject)",
+        )
+    )
+    for d in domains:
+        dmarc_policy = (d.get("dmarc") or {}).get("policy") or "missing"
+        spf_ending = (d.get("spf") or {}).get("ending") or "missing"
+        dkim_present = (d.get("dkim") or {}).get("present")
+        entry["evidence"].append(
+            _evidence(
+                "DNS",
+                f"{d['domain']}: SPF={spf_ending}, DKIM={'yes' if dkim_present else 'no'}, DMARC={dmarc_policy}",
+                confidence="High",
+            )
+        )
+
+    entry["maturity"] = MATURITY_AUTOMATED
+    if domains and not weak and not missing:
+        entry["status"] = STATUS_COMPLIANT
+        entry["remediation"] = _remediation("None", BUCKET_QUICK, [])
+    elif strong:
+        entry["status"] = STATUS_PARTIAL
+        if missing:
+            entry["gaps"].append(
+                f"Domain(s) with no email authentication: {', '.join(d['domain'] for d in missing)}"
+            )
+        if weak:
+            entry["gaps"].append(
+                f"Domain(s) with weak posture (missing one of SPF/DKIM/DMARC or DMARC p=none): {', '.join(d['domain'] for d in weak)}"
+            )
+        entry["remediation"] = _remediation(
+            "1 hour",
+            BUCKET_QUICK,
+            [
+                "Publish SPF '-all' (strict) at each custom domain's TXT apex.",
+                "Enable DKIM signing in Defender portal and publish selector1/selector2 CNAMEs.",
+                "Publish DMARC with p=quarantine (then p=reject after monitoring).",
+            ],
+        )
+    else:
+        entry["status"] = STATUS_NOT_ADDRESSED
+        entry["gaps"].append(
+            f"No tenant domain has a complete SPF/DKIM/DMARC configuration."
+        )
+        entry["remediation"] = _remediation(
+            "2 hours",
+            BUCKET_QUICK,
+            [
+                "Publish SPF '-all' at each custom domain's TXT apex.",
+                "Enable DKIM signing in the Defender portal; publish selector CNAMEs.",
+                "Publish DMARC record with p=quarantine or p=reject.",
+            ],
+        )
     return entry
 
 

@@ -17,7 +17,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import admin_links
 import attestations as attestations_store
 import critical_findings
-from collectors import azure_ad, defender, exchange, intune, policies
+from collectors import azure_ad, defender, email_security, exchange, intune, policies
 from graph_client import GraphClient
 from mappers import coverage, nist_800_171
 
@@ -31,6 +31,7 @@ COLLECTOR_FUNCTIONS = {
     "intune": intune.collect,
     "defender": defender.collect,
     "exchange": exchange.collect,
+    "email_security": email_security.collect,
     "policies": policies.collect,
 }
 
@@ -106,6 +107,8 @@ def run_collection(
                 call = lambda c=client, s=settings: fn(c, s.get("site_url", ""))
             elif name == "intune":
                 call = lambda c=client, s=settings: fn(c, s.get("filter_os") or None)
+            elif name == "email_security":
+                call = lambda c=client, s=settings: fn(c, s.get("domains") or None)
             else:
                 call = lambda c=client, f=fn: f(c)
             futures[executor.submit(call)] = name
