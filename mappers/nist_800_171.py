@@ -39,6 +39,7 @@ CONTROL_IDS = [
     "AC-2",
     "AC-3",
     "AC-6",
+    "AC-7",
     "AT-1",
     "AU-1",
     "AU-2",
@@ -92,6 +93,7 @@ def map(evidence: dict[str, Any]) -> dict[str, Any]:
         "AC-2": _map_ac2,
         "AC-3": _map_ac3,
         "AC-6": _map_ac6,
+        "AC-7": _map_ac7,
         "IA-2": _map_ia2,
         "IA-4": _map_ia4,
         "IA-5": _map_ia5,
@@ -535,6 +537,93 @@ def _map_ac6(evidence: dict[str, Any]) -> dict[str, Any]:
             [
                 "Move standing Global Admin assignments to PIM-eligible (require activation).",
                 "Document break-glass account ownership and add to exceptions list.",
+            ],
+        )
+    return entry
+
+
+def _map_ac7(evidence: dict[str, Any]) -> dict[str, Any]:
+    entry = _base(
+        "Unsuccessful Logon Attempts",
+        "AC",
+        "Limit unsuccessful logon attempts and lock accounts accordingly.",
+    )
+    failures = (evidence.get("azure_ad") or {}).get("signInFailures") or {}
+    total = failures.get("totalFailures", 0)
+    lockouts = failures.get("lockoutsObserved", 0)
+    brute_force = failures.get("bruteForceCandidates") or []
+    window = failures.get("windowDays", 30)
+
+    if not failures:
+        entry["status"] = STATUS_NOT_ADDRESSED
+        entry["gaps"].append(
+            "No sign-in log data collected; cannot verify lockout enforcement."
+        )
+        entry["remediation"] = _remediation(
+            "30 minutes",
+            BUCKET_QUICK,
+            ["Ensure AuditLog.Read.All is granted so /auditLogs/signIns is readable."],
+        )
+        return entry
+
+    entry["evidence"].append(
+        _evidence(
+            "Azure AD",
+            f"{total} failed sign-in(s) recorded in past {window} days across {failures.get('uniqueFailingUsers', 0)} user(s).",
+        )
+    )
+    entry["evidence"].append(
+        _evidence(
+            "Azure AD",
+            f"{lockouts} lockout event(s) observed (error 50053 — Entra smart lockout triggered)."
+            if lockouts
+            else "No lockout events (error 50053) in the sampled window — either posture is clean or lockout hasn't been triggered recently.",
+            confidence="High" if lockouts else "Medium",
+        )
+    )
+    if brute_force:
+        names = ", ".join(
+            f"{u['userPrincipalName']} ({u['failures']})" for u in brute_force[:5]
+        )
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"Potential brute-force pattern — user(s) with >=5 failures in {window} days: {names}",
+                confidence="High",
+            )
+        )
+
+    entry["maturity"] = MATURITY_AUTOMATED
+    if lockouts > 0:
+        entry["status"] = STATUS_COMPLIANT
+        entry["remediation"] = _remediation("None", BUCKET_QUICK, [])
+    elif total == 0:
+        # No failed sign-ins at all in 30 days. Lockout is configured platform-side
+        # (Entra smart lockout is on by default) but we haven't seen it triggered.
+        entry["status"] = STATUS_PARTIAL
+        entry["gaps"].append(
+            "No failed sign-ins to observe lockout behavior. Entra smart lockout is on by default; confirm threshold settings in Security > Authentication methods > Password protection."
+        )
+        entry["remediation"] = _remediation(
+            "15 minutes",
+            BUCKET_QUICK,
+            ["Verify smart lockout threshold and duration in Entra authentication methods."],
+        )
+    else:
+        entry["status"] = STATUS_PARTIAL
+        entry["gaps"].append(
+            f"{total} failed sign-ins but no lockouts observed. Either none triggered the threshold, or lockout is mis-configured."
+        )
+        if brute_force:
+            entry["gaps"].append(
+                "Potential brute-force pattern — investigate flagged users above and verify lockout threshold."
+            )
+        entry["remediation"] = _remediation(
+            "30 minutes",
+            BUCKET_QUICK,
+            [
+                "Review smart lockout threshold (default is 10 failures / 60 sec) in Entra authentication methods.",
+                "Investigate flagged users for legitimate vs attack traffic.",
             ],
         )
     return entry

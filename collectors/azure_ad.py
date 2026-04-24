@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from collectors.base import BaseCollector
@@ -39,6 +39,7 @@ class AzureADCollector(BaseCollector):
         ca_policies = self._collect_conditional_access()
         audit_logs = self._collect_audit_logs()
         sign_in_risks = self._collect_sign_in_risks()
+        sign_in_failures = self._collect_sign_in_failures()
 
         return {
             "users": users,
@@ -46,6 +47,7 @@ class AzureADCollector(BaseCollector):
             "conditionalAccessPolicies": ca_policies,
             "auditLogs": audit_logs,
             "signInRisks": sign_in_risks,
+            "signInFailures": sign_in_failures,
         }
 
     def _collect_users(self) -> list[dict[str, Any]]:
@@ -219,6 +221,63 @@ class AzureADCollector(BaseCollector):
         return {
             "detectedInPast90Days": len(filtered),
             "sample": sample,
+        }
+
+    def _collect_sign_in_failures(self) -> dict[str, Any]:
+        """Pull recent signIns, split into failures, and surface patterns
+        that signal AC-7 posture. Uses client-side filtering because the
+        combination of ``status/errorCode`` and ``$orderby=createdDateTime``
+        is prickly on Graph.
+        """
+        cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+        cutoff_iso = cutoff.strftime("%Y-%m-%dT%H:%M:%SZ")
+        raw = self._safe_get_all(
+            "/auditLogs/signIns",
+            params={
+                "$top": "200",
+                "$orderby": "createdDateTime desc",
+                "$filter": f"createdDateTime ge {cutoff_iso}",
+            },
+        )
+        failures = []
+        lockouts = []
+        by_user: dict[str, int] = {}
+        lockout_codes = {50053}  # account locked out (Entra smart lockout)
+        for entry in raw:
+            status = entry.get("status") or {}
+            error_code = status.get("errorCode") or 0
+            if error_code == 0:
+                continue
+            upn = entry.get("userPrincipalName") or entry.get("userDisplayName") or "(unknown)"
+            record = {
+                "createdDateTime": entry.get("createdDateTime"),
+                "userPrincipalName": upn,
+                "errorCode": error_code,
+                "failureReason": status.get("failureReason"),
+                "ipAddress": entry.get("ipAddress"),
+                "appDisplayName": entry.get("appDisplayName"),
+            }
+            failures.append(record)
+            by_user[upn] = by_user.get(upn, 0) + 1
+            if error_code in lockout_codes:
+                lockouts.append(record)
+        brute_force = [
+            {"userPrincipalName": upn, "failures": count}
+            for upn, count in sorted(by_user.items(), key=lambda kv: kv[1], reverse=True)
+            if count >= 5
+        ]
+        return {
+            "windowDays": 30,
+            "sampleSize": len(raw),
+            "totalFailures": len(failures),
+            "uniqueFailingUsers": len(by_user),
+            "lockoutsObserved": len(lockouts),
+            "bruteForceCandidates": brute_force[:10],
+            "sampleFailures": failures[:25],
+            "note": (
+                "Last 200 sign-ins in the past 30 days. Larger windows require "
+                "direct Entra/Log Analytics integration."
+            ),
         }
 
 

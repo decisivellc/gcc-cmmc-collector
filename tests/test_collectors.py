@@ -96,6 +96,63 @@ def test_azure_ad_degrades_when_users_call_fails():
     assert evidence["conditionalAccessPolicies"] == []
 
 
+def test_azure_ad_sign_in_failures_aggregates_counts_and_lockouts():
+    paginated = {
+        "/auditLogs/signIns": [
+            {
+                "createdDateTime": "2026-04-20T12:00:00Z",
+                "userPrincipalName": "alice@x.us",
+                "status": {"errorCode": 50126, "failureReason": "Invalid credentials"},
+                "ipAddress": "1.1.1.1",
+            },
+            {
+                "createdDateTime": "2026-04-20T12:01:00Z",
+                "userPrincipalName": "alice@x.us",
+                "status": {"errorCode": 50053, "failureReason": "Locked out"},
+                "ipAddress": "1.1.1.1",
+            },
+            {
+                "createdDateTime": "2026-04-20T12:02:00Z",
+                "userPrincipalName": "bob@x.us",
+                "status": {"errorCode": 0},
+            },
+        ],
+    }
+    client = FakeClient(routes={}, paginated_routes=paginated)
+    evidence = azure_ad.collect(client)
+    sif = evidence["signInFailures"]
+    assert sif["totalFailures"] == 2
+    assert sif["uniqueFailingUsers"] == 1
+    assert sif["lockoutsObserved"] == 1
+    assert sif["windowDays"] == 30
+
+
+def test_azure_ad_sign_in_failures_flags_brute_force():
+    paginated = {
+        "/auditLogs/signIns": [
+            {
+                "createdDateTime": "2026-04-20T12:00:00Z",
+                "userPrincipalName": "target@x.us",
+                "status": {"errorCode": 50126},
+            }
+        ] * 7
+        + [
+            {
+                "createdDateTime": "2026-04-20T12:00:00Z",
+                "userPrincipalName": "other@x.us",
+                "status": {"errorCode": 50126},
+            }
+        ]
+        * 2,
+    }
+    client = FakeClient(routes={}, paginated_routes=paginated)
+    evidence = azure_ad.collect(client)
+    sif = evidence["signInFailures"]
+    bf_upns = [u["userPrincipalName"] for u in sif["bruteForceCandidates"]]
+    assert "target@x.us" in bf_upns
+    assert "other@x.us" not in bf_upns
+
+
 # ----- Intune -----------------------------------------------------------
 
 
