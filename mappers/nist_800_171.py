@@ -237,6 +237,16 @@ def _evidence(source: str, detail: str, confidence: str = "High") -> dict[str, s
     return {"source": source, "detail": detail, "confidence": confidence}
 
 
+def _name_list(users: list[dict[str, Any]], limit: int = 5) -> str:
+    names = [u.get("userPrincipalName") or u.get("displayName") or "unknown" for u in users[:limit]]
+    suffix = f" (+{len(users) - limit} more)" if len(users) > limit else ""
+    return ", ".join(names) + suffix
+
+
+def _privileged_users(users: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [u for u in users if u.get("assignedRoles")]
+
+
 def _remediation(
     effort: str,
     bucket: str,
@@ -325,11 +335,21 @@ def _map_ac2(evidence: dict[str, Any]) -> dict[str, Any]:
         and u["lastActiveInDays"] > 30
     ]
 
+    privileged_inactive = _privileged_users(inactive)
+
     entry["evidence"] = [
         _evidence("Azure AD", f"{len(active)} active users"),
         _evidence("Azure AD", f"{len(mfa_enabled)}/{len(active)} users with MFA registered"),
         _evidence("Azure AD", f"{len(inactive)} inactive users (>30 days since sign-in)"),
     ]
+    if privileged_inactive:
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"CRITICAL: {len(privileged_inactive)} privileged account(s) inactive >30 days: {_name_list(privileged_inactive)}",
+                confidence="High",
+            )
+        )
     entry["maturity"] = MATURITY_AUTOMATED
     compliant = not inactive and len(mfa_enabled) == len(active) and active
     if compliant:
@@ -337,18 +357,24 @@ def _map_ac2(evidence: dict[str, Any]) -> dict[str, Any]:
         entry["remediation"] = _remediation("None", BUCKET_QUICK, [])
     else:
         entry["status"] = STATUS_PARTIAL if active else STATUS_NOT_ADDRESSED
-        if inactive:
+        if privileged_inactive:
             entry["gaps"].append(
-                f"{len(inactive)} user accounts inactive for >30 days."
+                f"Privileged account(s) inactive >30 days — disable or reassign: {_name_list(privileged_inactive)}"
+            )
+        other_inactive = [u for u in inactive if u not in privileged_inactive]
+        if other_inactive:
+            entry["gaps"].append(
+                f"{len(other_inactive)} other inactive account(s): {_name_list(other_inactive)}"
             )
         if len(mfa_enabled) < len(active):
+            missing_mfa = [u for u in active if u.get("mfaStatus") != "enabled"]
             entry["gaps"].append(
-                f"{len(active) - len(mfa_enabled)} active users without registered MFA."
+                f"{len(missing_mfa)} active user(s) without MFA: {_name_list(missing_mfa)}"
             )
         steps: list[str] = []
         if inactive:
             steps.append(
-                f"Disable {len(inactive)} inactive accounts in Entra admin center."
+                f"Disable or reassign {len(inactive)} inactive account(s) in Entra admin center."
             )
         if len(mfa_enabled) < len(active):
             steps.append("Register MFA for remaining active users.")
@@ -401,14 +427,20 @@ def _map_ac6(evidence: dict[str, Any]) -> dict[str, Any]:
         "Employ the principle of least privilege for administrative access.",
     )
     active = _active_users(evidence)
-    privileged = [u for u in active if u.get("assignedRoles")]
+    privileged = _privileged_users(active)
     global_admins = [
         u for u in privileged if "Global Administrator" in (u.get("assignedRoles") or [])
     ]
     entry["evidence"] = [
         _evidence("Azure AD", f"{len(privileged)} users hold one or more privileged roles"),
-        _evidence("Azure AD", f"{len(global_admins)} Global Administrators"),
     ]
+    if global_admins:
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"{len(global_admins)} Global Administrator(s): {_name_list(global_admins)}",
+            )
+        )
     entry["maturity"] = MATURITY_AUTOMATED
     if 1 <= len(global_admins) <= 2 and len(privileged) <= max(2, int(len(active) * 0.3) + 1):
         entry["status"] = STATUS_COMPLIANT
@@ -417,7 +449,8 @@ def _map_ac6(evidence: dict[str, Any]) -> dict[str, Any]:
         entry["status"] = STATUS_PARTIAL
         if len(global_admins) > 2:
             entry["gaps"].append(
-                f"{len(global_admins)} Global Administrators — recommend 2 or fewer."
+                f"{len(global_admins)} Global Administrators ({_name_list(global_admins)}) — "
+                "recommend 2 or fewer standing assignments."
             )
         if len(global_admins) == 0:
             entry["gaps"].append("No Global Administrator detected — verify tenant access.")
@@ -440,6 +473,8 @@ def _map_ia2(evidence: dict[str, Any]) -> dict[str, Any]:
     )
     active = _active_users(evidence)
     mfa_enabled = [u for u in active if u.get("mfaStatus") == "enabled"]
+    mfa_missing = [u for u in active if u.get("mfaStatus") != "enabled"]
+    privileged_missing = _privileged_users(mfa_missing)
     mfa_policies = _mfa_requiring_policies(_conditional_access(evidence))
     entry["evidence"] = [
         _evidence(
@@ -451,15 +486,29 @@ def _map_ia2(evidence: dict[str, Any]) -> dict[str, Any]:
             f"{len(mfa_policies)} conditional-access policies enforcing MFA",
         ),
     ]
+    if privileged_missing:
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"CRITICAL: {len(privileged_missing)} privileged account(s) without MFA: {_name_list(privileged_missing)}",
+                confidence="High",
+            )
+        )
     entry["maturity"] = MATURITY_AUTOMATED
     if active and len(mfa_enabled) == len(active) and mfa_policies:
         entry["status"] = STATUS_COMPLIANT
         entry["remediation"] = _remediation("None", BUCKET_QUICK, [])
     elif mfa_policies:
         entry["status"] = STATUS_PARTIAL
-        entry["gaps"].append(
-            f"{len(active) - len(mfa_enabled)} active users without MFA registration."
-        )
+        if privileged_missing:
+            entry["gaps"].append(
+                f"Privileged account(s) without MFA — resolve before anything else: {_name_list(privileged_missing)}"
+            )
+        other_missing = [u for u in mfa_missing if u not in privileged_missing]
+        if other_missing:
+            entry["gaps"].append(
+                f"{len(other_missing)} other active user(s) without MFA: {_name_list(other_missing)}"
+            )
         entry["remediation"] = _remediation(
             "1 hour",
             BUCKET_QUICK,
