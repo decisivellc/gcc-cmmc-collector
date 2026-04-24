@@ -33,5 +33,8 @@ services:
         - action: sync+restart
           path: ./graph_client.py
           target: /app/graph_client.py
+        - action: sync+restart
+          path: ./admin_links.py
+          target: /app/admin_links.py
         - action: rebuild
           path: ./requirements.txt
