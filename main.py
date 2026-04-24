@@ -386,26 +386,57 @@ def run_pipeline(config: dict[str, Any], output_dir: Path) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        prog="cmmc-gcc-collector",
-        description="Collect CMMC pre-assessment evidence from a GCC-High tenant.",
-    )
-    parser.add_argument("--config", required=True, help="Path to config.json")
-    parser.add_argument(
-        "--output", default="./reports", help="Output directory (default: ./reports)"
-    )
+    import sys
+    raw_argv = list(argv) if argv is not None else sys.argv[1:]
+
+    # Pre-scan for an explicit subcommand. If none, treat as the legacy
+    # "run" invocation (--config / --output at the top level).
+    known_commands = {"run", "bootstrap"}
+    command = "run"
+    subcommand_argv: list[str] = raw_argv
+    for idx, token in enumerate(raw_argv):
+        if token in known_commands:
+            command = token
+            subcommand_argv = raw_argv[:idx] + raw_argv[idx + 1:]
+            break
+
+    if command == "bootstrap":
+        parser = argparse.ArgumentParser(
+            prog="cmmc-gcc-collector bootstrap",
+            description="Create the Entra app registration via device-code OAuth (interactive).",
+        )
+    else:
+        parser = argparse.ArgumentParser(
+            prog="cmmc-gcc-collector",
+            description="Collect CMMC pre-assessment evidence from a GCC-High tenant.",
+        )
     parser.add_argument(
         "--log-level",
         default=os.environ.get("CMMC_LOG_LEVEL", "INFO"),
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
     )
-    args = parser.parse_args(argv)
+    if command == "bootstrap":
+        parser.add_argument("--tenant", required=True)
+        parser.add_argument("--config", default="./config.json")
+        parser.add_argument("--display-name", default="cmmc-gcc-evidence-collector")
+        parser.add_argument("--secret-ttl-days", type=int, default=180)
+    else:
+        parser.add_argument("--config", required=True)
+        parser.add_argument("--output", default="./reports")
+
+    args = parser.parse_args(subcommand_argv)
 
     logging.basicConfig(
         level=getattr(logging, args.log_level),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
 
+    if command == "bootstrap":
+        return _bootstrap_command(args)
+    return _run_command(args)
+
+
+def _run_command(args) -> int:
     try:
         config = load_config(args.config)
     except ConfigError as exc:
@@ -420,6 +451,47 @@ def main(argv: list[str] | None = None) -> int:
 
     logger.info("Report generated: %s", result["outputs"]["report"])
     print(f"Report generated: {result['outputs']['report']}")
+    return 0
+
+
+def _bootstrap_command(args) -> int:
+    import bootstrap
+    try:
+        result = bootstrap.bootstrap_app(
+            tenant_identifier=args.tenant,
+            app_display_name=args.display_name,
+            secret_ttl_days=args.secret_ttl_days,
+        )
+    except bootstrap.BootstrapError as exc:
+        logger.error("Bootstrap failed: %s", exc)
+        return 4
+
+    config_path = Path(args.config)
+    existing: dict[str, Any] = {}
+    if config_path.exists():
+        try:
+            existing = json.loads(config_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            logger.warning("Existing config.json was not valid JSON; starting fresh.")
+            existing = {}
+    existing["tenant_id"] = result["tenant_id"]
+    existing["client_id"] = result["client_id"]
+    existing.setdefault("authority", "https://login.microsoftonline.us")
+    existing.setdefault("graph_base_url", "https://graph.microsoft.us/v1.0")
+    existing.pop("client_secret", None)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(json.dumps(existing, indent=2), encoding="utf-8")
+
+    print("")
+    print(f"App registered.")
+    print(f"  Config updated: {config_path}")
+    print(f"  Tenant ID:      {result['tenant_id']}")
+    print(f"  Client ID:      {result['client_id']}")
+    print(f"  Client Secret:  {result['client_secret']}")
+    print("")
+    print("Store the secret immediately — it cannot be retrieved again.")
+    print("Export it for runs:  export CMMC_CLIENT_SECRET='...'")
+    print("Or paste into the Flask web UI login on first visit.")
     return 0
 
 

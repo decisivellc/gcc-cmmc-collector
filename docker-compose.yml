@@ -48,6 +48,9 @@ services:
         - action: sync+restart
           path: ./history.py
           target: /app/history.py
+        - action: sync+restart
+          path: ./bootstrap.py
+          target: /app/bootstrap.py
         - action: rebuild
           path: ./requirements.txt
         - action: rebuild

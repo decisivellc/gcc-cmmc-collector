@@ -34,10 +34,23 @@ cd gcc-cmmc-collector
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
 
-cp config.template.json config.json
-# Fill in tenant_id, client_id, client_secret — see SETUP.md
+**Entra app registration** — one-time setup for a new tenant. Two options:
 
+- **Automated** (recommended): launches a device-code login, creates the Entra app, grants all 10 required permissions, and writes tenant/client IDs to `config.json`. You'll be prompted to sign in as a Global Administrator.
+
+    ```bash
+    python main.py bootstrap --tenant decisivellc.onmicrosoft.us
+    # Copy the printed client secret — it won't be shown again.
+    export CMMC_CLIENT_SECRET='<paste>'
+    ```
+
+- **Manual**: follow the 20-minute walkthrough in [`SETUP.md`](SETUP.md) to create the app registration, mint a secret, and grant each permission by hand.
+
+**Run**:
+
+```bash
 python main.py --config config.json --output ./reports
 open reports/compliance-report.html
 ```
