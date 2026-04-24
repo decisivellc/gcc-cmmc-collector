@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import admin_links  # noqa: E402
 import main  # noqa: E402
 from mappers import nist_800_171  # noqa: E402
 
@@ -43,6 +44,8 @@ def render() -> Path:
         trim_blocks=True,
         lstrip_blocks=True,
     )
+    link_index = admin_links.build_link_index(evidence)
+    env.filters["linkify"] = lambda text: admin_links.linkify(text, link_index)
     template = env.get_template("report.html")
     remediation = nist_800_171.generate_remediation_backlog(compliance)
     html = template.render(
@@ -57,6 +60,7 @@ def render() -> Path:
         remediation=remediation,
         collection_warnings=evidence.get("collection_warnings") or [],
         policies=evidence.get("policies") or {},
+        secure_score_url=admin_links.secure_score_url(),
     )
     output_dir = ROOT / "reports"
     output_dir.mkdir(exist_ok=True)

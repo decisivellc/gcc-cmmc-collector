@@ -328,7 +328,7 @@
             <span class="effort">{{ gap.effort }}</span>
           </div>
           <div class="gap-title">{{ gap.title }}</div>
-          <div class="gap-detail">{{ gap.firstGap }}</div>
+          <div class="gap-detail">{{ gap.firstGap | linkify | safe }}</div>
         </li>
         {% endfor %}
       </ol>
@@ -364,7 +364,7 @@
     <tbody>
       {% for device in devices %}
       <tr>
-        <td>{{ device.deviceName }}</td>
+        <td>{{ device.deviceName | linkify | safe }}</td>
         <td>{{ device.osVersion or 'n/a' }}</td>
         <td><span class="badge badge-{{ device.complianceState }}">{{ device.complianceState }}</span></td>
         <td>{% if device.lastSyncDaysAgo is none %}never{% else %}{{ device.lastSyncDaysAgo }} days ago{% endif %}</td>
@@ -433,7 +433,7 @@
       <div class="evidence"><strong>Evidence:</strong>
         <ul>
           {% for item in control.evidence %}
-          <li>{{ item.detail }} <em>({{ item.source }})</em></li>
+          <li>{{ item.detail | linkify | safe }} <em>({{ item.source }})</em></li>
           {% endfor %}
         </ul>
       </div>
@@ -441,7 +441,7 @@
       {% if control.gaps %}
       <div class="gaps"><strong>Gaps:</strong>
         <ul>
-          {% for gap in control.gaps %}<li>{{ gap }}</li>{% endfor %}
+          {% for gap in control.gaps %}<li>{{ gap | linkify | safe }}</li>{% endfor %}
         </ul>
       </div>
       {% endif %}

@@ -138,6 +138,7 @@ class AzureADCollector(BaseCollector):
             users = (conditions.get("users") or {}).get("includeUsers", [])
             policies.append(
                 {
+                    "id": entry.get("id"),
                     "displayName": entry.get("displayName"),
                     "state": entry.get("state"),
                     "grantControls": grant_controls,

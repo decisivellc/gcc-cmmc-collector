@@ -14,6 +14,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+import admin_links
 from collectors import azure_ad, defender, exchange, intune, policies
 from graph_client import GraphClient
 from mappers import nist_800_171
@@ -123,6 +124,8 @@ def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any])
         trim_blocks=True,
         lstrip_blocks=True,
     )
+    link_index = admin_links.build_link_index(evidence)
+    env.filters["linkify"] = lambda text: admin_links.linkify(text, link_index)
     template = env.get_template("report.html")
     controls = compliance_status.get("controls", {})
     grouped = _group_by_family(controls)
@@ -141,6 +144,7 @@ def generate_report(compliance_status: dict[str, Any], evidence: dict[str, Any])
         remediation=remediation,
         collection_warnings=evidence.get("collection_warnings") or [],
         policies=evidence.get("policies") or {},
+        secure_score_url=admin_links.secure_score_url(),
     )
 
 
