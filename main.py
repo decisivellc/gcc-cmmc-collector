@@ -18,7 +18,7 @@ import admin_links
 import attestations as attestations_store
 import critical_findings
 import history
-from collectors import azure_ad, defender, email_security, exchange, intune, policies
+from collectors import azure_ad, defender, email_security, exchange, intune, policies, tenant_settings
 from graph_client import GraphClient
 from mappers import coverage, nist_800_171
 
@@ -33,6 +33,7 @@ COLLECTOR_FUNCTIONS = {
     "defender": defender.collect,
     "exchange": exchange.collect,
     "email_security": email_security.collect,
+    "tenant_settings": tenant_settings.collect,
     "policies": policies.collect,
 }
 

@@ -467,6 +467,16 @@ def _map_ac3(evidence: dict[str, Any]) -> dict[str, Any]:
         _report_only_policies(ca_policies),
         topic="access-control",
     )
+    named_locations = (evidence.get("tenant_settings") or {}).get("namedLocations") or []
+    if named_locations:
+        trusted = [n for n in named_locations if n.get("isTrusted")]
+        entry["evidence"].append(
+            _evidence(
+                "Azure AD",
+                f"{len(named_locations)} named location(s) defined "
+                f"({len(trusted)} marked trusted) — feed CA boundary decisions.",
+            )
+        )
     return entry
 
 
@@ -517,9 +527,31 @@ def _map_ac6(evidence: dict[str, Any]) -> dict[str, Any]:
                 f"PIM activity: {total} activation(s) by {len(pim_counts)} principal(s) in sampled audit window",
             )
         )
+    auth_policy = (evidence.get("tenant_settings") or {}).get("authorizationPolicy") or {}
+    permission_concerns: list[str] = []
+    if auth_policy.get("allowedToCreateApps") is True:
+        permission_concerns.append("default users can register applications")
+    if auth_policy.get("allowedToCreateTenants") is True:
+        permission_concerns.append("default users can create tenants")
+    if auth_policy.get("allowEmailVerifiedUsersToJoinOrganization") is True:
+        permission_concerns.append(
+            "email-verified users can self-join the tenant"
+        )
+    if auth_policy.get("allowedToReadOtherUsers") is True:
+        # This is the default and not always a problem, but worth surfacing.
+        pass
+    if permission_concerns:
+        entry["evidence"].append(
+            _evidence(
+                "Tenant settings",
+                "Default user role permissions of concern: " + "; ".join(permission_concerns),
+                confidence="High",
+            )
+        )
+
     entry["maturity"] = MATURITY_AUTOMATED
     standing_count = len(standing_admins)
-    if 1 <= standing_count <= 2 and len(privileged) <= max(2, int(len(active) * 0.3) + 1):
+    if 1 <= standing_count <= 2 and len(privileged) <= max(2, int(len(active) * 0.3) + 1) and not permission_concerns:
         entry["status"] = STATUS_COMPLIANT
         entry["remediation"] = _remediation("None", BUCKET_QUICK, [])
     else:
@@ -531,11 +563,17 @@ def _map_ac6(evidence: dict[str, Any]) -> dict[str, Any]:
             )
         if standing_count == 0 and not jit_admins:
             entry["gaps"].append("No Global Administrator detected — verify tenant access.")
+        if permission_concerns:
+            entry["gaps"].append(
+                "Tighten default user role permissions in Entra > Authorization policy: "
+                + "; ".join(permission_concerns) + "."
+            )
         entry["remediation"] = _remediation(
             "2 hours",
             BUCKET_QUICK,
             [
                 "Move standing Global Admin assignments to PIM-eligible (require activation).",
+                "Tighten default user role permissions (disallow app/tenant creation).",
                 "Document break-glass account ownership and add to exceptions list.",
             ],
         )

@@ -7,7 +7,7 @@
 <form method="post">
   <div class="card">
     <h3>Collectors</h3>
-    {% for name in ['azure_ad', 'intune', 'defender', 'exchange', 'email_security', 'policies'] %}
+    {% for name in ['azure_ad', 'intune', 'defender', 'exchange', 'email_security', 'tenant_settings', 'policies'] %}
       {% set settings = (config.collectors or {}).get(name) or {} %}
       <div class="toggle">
         <input type="checkbox" id="{{ name }}_enabled" name="{{ name }}_enabled" {% if settings.get('enabled', True) %}checked{% endif %}>

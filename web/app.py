@@ -117,7 +117,7 @@ def create_app() -> Flask:
         cfg = _load_config_safe()
         if request.method == "POST":
             collectors_cfg = cfg.setdefault("collectors", _default_collectors())
-            for name in ("azure_ad", "intune", "defender", "exchange", "email_security", "policies"):
+            for name in ("azure_ad", "intune", "defender", "exchange", "email_security", "tenant_settings", "policies"):
                 block = collectors_cfg.setdefault(name, {})
                 block["enabled"] = request.form.get(f"{name}_enabled") == "on"
             policies = collectors_cfg.setdefault("policies", {})
@@ -331,6 +331,7 @@ def _default_collectors() -> dict[str, Any]:
         "defender": {"enabled": True, "vulnerability_threshold_severity": "high"},
         "exchange": {"enabled": True},
         "email_security": {"enabled": True, "domains": []},
+        "tenant_settings": {"enabled": True},
         "policies": {"enabled": True, "site_url": ""},
     }
 
